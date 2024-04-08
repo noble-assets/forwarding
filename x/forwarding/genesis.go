@@ -1,23 +1,24 @@
 package forwarding
 
 import (
+	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/forwarding/x/forwarding/keeper"
 	"github.com/noble-assets/forwarding/x/forwarding/types"
 )
 
-func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genesis types.GenesisState) {
+func InitGenesis(ctx context.Context, k *keeper.Keeper, genesis types.GenesisState) {
 	for channel, count := range genesis.NumOfAccounts {
-		k.SetNumOfAccounts(ctx, channel, count)
+		_ = k.NumOfAccounts.Set(ctx, channel, count)
 	}
 
 	for channel, count := range genesis.NumOfForwards {
-		k.SetNumOfForwards(ctx, channel, count)
+		_ = k.NumOfForwards.Set(ctx, channel, count)
 	}
 
-	for channel, rawTotal := range genesis.TotalForwarded {
-		total, _ := sdk.ParseCoinsNormalized(rawTotal)
-		k.SetTotalForwarded(ctx, channel, total)
+	for channel, total := range genesis.TotalForwarded {
+		_ = k.TotalForwarded.Set(ctx, channel, total)
 	}
 }
 

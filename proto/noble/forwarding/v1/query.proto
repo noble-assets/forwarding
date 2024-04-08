@@ -2,7 +2,10 @@ syntax = "proto3";
 
 package noble.forwarding.v1;
 
+import "amino/amino.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/query/v1/query.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
@@ -10,10 +13,12 @@ option go_package = "github.com/noble-assets/forwarding/x/forwarding/types";
 
 service Query {
   rpc Address(QueryAddress) returns (QueryAddressResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/noble/forwarding/v1/address/{channel}/{recipient}";
   }
 
   rpc StatsByChannel(QueryStatsByChannel) returns (QueryStatsByChannelResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/noble/forwarding/v1/stats/{channel}";
   }
 }
@@ -21,23 +26,31 @@ service Query {
 //
 
 message QueryAddress {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
   string channel = 1;
   string recipient = 2;
 }
 
 message QueryAddressResponse {
-  string address = 1;
-  bool exists = 2;
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  bool exists = 2 [(amino.dont_omitempty) = true];
 }
 
 message QueryStatsByChannel {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
   string channel = 1;
 }
 
 message QueryStatsByChannelResponse {
-  uint64 num_of_accounts = 1;
-  uint64 num_of_forwards = 2;
+  uint64 num_of_accounts = 1 [(amino.dont_omitempty) = true];
+  uint64 num_of_forwards = 2 [(amino.dont_omitempty) = true];
   repeated cosmos.base.v1beta1.Coin total_forwarded = 3 [
+    (amino.dont_omitempty) = true,
+    (amino.encoding) = "legacy_coins",
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];

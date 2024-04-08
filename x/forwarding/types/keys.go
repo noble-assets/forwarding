@@ -12,19 +12,3 @@ var (
 	TotalForwardedPrefix  = []byte("total_forwarded")
 	PendingForwardsPrefix = []byte("pending_forwards")
 )
-
-func NumOfAccountsKey(channel string) []byte {
-	return append(NumOfAccountsPrefix, []byte(channel)...)
-}
-
-func NumOfForwardsKey(channel string) []byte {
-	return append(NumOfForwardsPrefix, []byte(channel)...)
-}
-
-func TotalForwardedKey(channel string) []byte {
-	return append(TotalForwardedPrefix, []byte(channel)...)
-}
-
-func PendingForwardsKey(account *ForwardingAccount) []byte {
-	return append(PendingForwardsPrefix, account.GetAddress()...)
-}

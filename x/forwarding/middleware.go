@@ -3,11 +3,11 @@ package forwarding
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
-	"github.com/cosmos/ibc-go/v4/modules/core/exported"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
+	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"github.com/noble-assets/forwarding/x/forwarding/keeper"
 	"github.com/noble-assets/forwarding/x/forwarding/types"
 )
@@ -81,11 +81,7 @@ func (m Middleware) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, re
 					Channel:   channel,
 				}
 
-				if err := req.ValidateBasic(); err != nil {
-					return channeltypes.NewErrorAcknowledgement(err)
-				}
-
-				_, err := m.keeper.RegisterAccount(sdk.WrapSDKContext(ctx), req)
+				_, err := m.keeper.RegisterAccount(ctx, req)
 				if err != nil {
 					return channeltypes.NewErrorAcknowledgement(err)
 				}
@@ -122,7 +118,7 @@ func (m Middleware) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, re
 		Channel:   channel,
 	}
 
-	res, err := m.keeper.RegisterAccount(sdk.WrapSDKContext(ctx), req)
+	res, err := m.keeper.RegisterAccount(ctx, req)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	} else {
