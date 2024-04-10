@@ -3,19 +3,17 @@ package keeper
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/noble-assets/forwarding/x/forwarding/types"
 )
 
 var _ types.QueryServer = &Keeper{}
 
-func (k *Keeper) Address(goCtx context.Context, req *types.QueryAddress) (*types.QueryAddressResponse, error) {
+func (k *Keeper) Address(ctx context.Context, req *types.QueryAddress) (*types.QueryAddressResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
 	address := types.GenerateAddress(req.Channel, req.Recipient)
 
 	exists := false
@@ -30,16 +28,17 @@ func (k *Keeper) Address(goCtx context.Context, req *types.QueryAddress) (*types
 	}, nil
 }
 
-func (k *Keeper) StatsByChannel(goCtx context.Context, req *types.QueryStatsByChannel) (*types.QueryStatsByChannelResponse, error) {
+func (k *Keeper) StatsByChannel(ctx context.Context, req *types.QueryStatsByChannel) (*types.QueryStatsByChannelResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	numOfAccounts, _ := k.NumOfAccounts.Get(ctx, req.Channel)
+	numOfForwards, _ := k.NumOfForwards.Get(ctx, req.Channel)
 
 	return &types.QueryStatsByChannelResponse{
-		NumOfAccounts:  k.GetNumOfAccounts(ctx, req.Channel),
-		NumOfForwards:  k.GetNumOfForwards(ctx, req.Channel),
+		NumOfAccounts:  numOfAccounts,
+		NumOfForwards:  numOfForwards,
 		TotalForwarded: k.GetTotalForwarded(ctx, req.Channel),
 	}, nil
 }

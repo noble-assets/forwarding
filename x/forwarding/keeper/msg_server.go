@@ -7,18 +7,22 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/noble-assets/forwarding/x/forwarding/types"
 )
 
 var _ types.MsgServer = &Keeper{}
 
-func (k *Keeper) RegisterAccount(goCtx context.Context, msg *types.MsgRegisterAccount) (*types.MsgRegisterAccountResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAccount) (*types.MsgRegisterAccountResponse, error) {
+	if !channeltypes.IsValidChannelID(msg.Channel) {
+		return nil, errors.New("invalid channel")
+	}
+
 	address := types.GenerateAddress(msg.Channel, msg.Recipient)
 
-	channel, found := k.channelKeeper.GetChannel(ctx, transfertypes.PortID, msg.Channel)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	channel, found := k.channelKeeper.GetChannel(sdkCtx, transfertypes.PortID, msg.Channel)
 	if !found {
 		return nil, fmt.Errorf("channel does not exist: %s", msg.Channel)
 	}
@@ -38,7 +42,7 @@ func (k *Keeper) RegisterAccount(goCtx context.Context, msg *types.MsgRegisterAc
 				BaseAccount: account,
 				Channel:     msg.Channel,
 				Recipient:   msg.Recipient,
-				CreatedAt:   ctx.BlockHeight(),
+				CreatedAt:   sdkCtx.BlockHeight(),
 			}
 			k.authKeeper.SetAccount(ctx, rawAccount)
 
@@ -59,11 +63,12 @@ func (k *Keeper) RegisterAccount(goCtx context.Context, msg *types.MsgRegisterAc
 		return &types.MsgRegisterAccountResponse{Address: address.String()}, nil
 	}
 
+	base := k.authKeeper.NewAccountWithAddress(ctx, address)
 	account := types.ForwardingAccount{
-		BaseAccount: authtypes.NewBaseAccountWithAddress(address),
+		BaseAccount: authtypes.NewBaseAccount(base.GetAddress(), base.GetPubKey(), base.GetAccountNumber(), base.GetSequence()),
 		Channel:     msg.Channel,
 		Recipient:   msg.Recipient,
-		CreatedAt:   ctx.BlockHeight(),
+		CreatedAt:   sdkCtx.BlockHeight(),
 	}
 
 	k.authKeeper.SetAccount(ctx, &account)
@@ -72,8 +77,7 @@ func (k *Keeper) RegisterAccount(goCtx context.Context, msg *types.MsgRegisterAc
 	return &types.MsgRegisterAccountResponse{Address: address.String()}, nil
 }
 
-func (k *Keeper) ClearAccount(goCtx context.Context, msg *types.MsgClearAccount) (*types.MsgClearAccountResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k *Keeper) ClearAccount(ctx context.Context, msg *types.MsgClearAccount) (*types.MsgClearAccountResponse, error) {
 	address := sdk.MustAccAddressFromBech32(msg.Address)
 
 	rawAccount := k.authKeeper.GetAccount(ctx, address)

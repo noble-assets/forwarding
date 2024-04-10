@@ -1,174 +1,89 @@
 package keeper
 
 import (
-	"strconv"
+	"context"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/forwarding/x/forwarding/types"
 )
 
 // PERSISTENT STATE
 
-func (k *Keeper) GetNumOfAccounts(ctx sdk.Context, channel string) uint64 {
-	key := types.NumOfAccountsKey(channel)
-	bz := ctx.KVStore(k.storeKey).Get(key)
-
-	if bz == nil {
-		return 0
-	} else {
-		count, _ := strconv.ParseUint(string(bz), 10, 64)
-		return count
-	}
-}
-
-func (k *Keeper) GetAllNumOfAccounts(ctx sdk.Context) map[string]uint64 {
+func (k *Keeper) GetAllNumOfAccounts(ctx context.Context) map[string]uint64 {
 	counts := make(map[string]uint64)
 
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.NumOfAccountsPrefix)
-	iterator := sdk.KVStorePrefixIterator(store, nil)
+	_ = k.NumOfAccounts.Walk(ctx, nil, func(key string, value uint64) (stop bool, err error) {
+		counts[key] = value
 
-	for ; iterator.Valid(); iterator.Next() {
-		channel := string(iterator.Key())
-		count, _ := strconv.ParseUint(string(iterator.Value()), 10, 64)
-
-		counts[channel] = count
-	}
+		return false, nil
+	})
 
 	return counts
 }
 
-func (k *Keeper) IncrementNumOfAccounts(ctx sdk.Context, channel string) {
-	count := k.GetNumOfAccounts(ctx, channel)
-
-	key := types.NumOfAccountsKey(channel)
-	bz := []byte(strconv.Itoa(int(count + 1)))
-
-	ctx.KVStore(k.storeKey).Set(key, bz)
-
-	k.Logger(ctx).Info("registered a new account", "channel", channel)
-}
-
-func (k *Keeper) SetNumOfAccounts(ctx sdk.Context, channel string, count uint64) {
-	key := types.NumOfAccountsKey(channel)
-	bz := []byte(strconv.Itoa(int(count)))
-
-	ctx.KVStore(k.storeKey).Set(key, bz)
-}
-
-func (k *Keeper) GetNumOfForwards(ctx sdk.Context, channel string) uint64 {
-	key := types.NumOfForwardsKey(channel)
-	bz := ctx.KVStore(k.storeKey).Get(key)
-
-	if bz == nil {
-		return 0
-	} else {
-		count, _ := strconv.ParseUint(string(bz), 10, 64)
-		return count
-	}
-}
-
-func (k *Keeper) GetAllNumOfForwards(ctx sdk.Context) map[string]uint64 {
+func (k *Keeper) GetAllNumOfForwards(ctx context.Context) map[string]uint64 {
 	counts := make(map[string]uint64)
 
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.NumOfForwardsPrefix)
-	iterator := sdk.KVStorePrefixIterator(store, nil)
+	_ = k.NumOfForwards.Walk(ctx, nil, func(key string, value uint64) (stop bool, err error) {
+		counts[key] = value
 
-	for ; iterator.Valid(); iterator.Next() {
-		channel := string(iterator.Key())
-		count, _ := strconv.ParseUint(string(iterator.Value()), 10, 64)
-
-		counts[channel] = count
-	}
+		return false, nil
+	})
 
 	return counts
 }
 
-func (k *Keeper) IncrementNumOfForwards(ctx sdk.Context, channel string) {
-	count := k.GetNumOfForwards(ctx, channel)
+func (k *Keeper) IncrementNumOfAccounts(ctx context.Context, channel string) {
+	count, _ := k.NumOfAccounts.Get(ctx, channel)
+	_ = k.NumOfAccounts.Set(ctx, channel, count+1)
 
-	key := types.NumOfForwardsKey(channel)
-	bz := []byte(strconv.Itoa(int(count + 1)))
-
-	ctx.KVStore(k.storeKey).Set(key, bz)
+	k.Logger().Info("registered a new account", "channel", channel)
 }
 
-func (k *Keeper) SetNumOfForwards(ctx sdk.Context, channel string, count uint64) {
-	key := types.NumOfForwardsKey(channel)
-	bz := []byte(strconv.Itoa(int(count)))
-
-	ctx.KVStore(k.storeKey).Set(key, bz)
+func (k *Keeper) IncrementNumOfForwards(ctx context.Context, channel string) {
+	count, _ := k.NumOfForwards.Get(ctx, channel)
+	_ = k.NumOfForwards.Set(ctx, channel, count+1)
 }
 
-func (k *Keeper) GetTotalForwarded(ctx sdk.Context, channel string) sdk.Coins {
-	key := types.TotalForwardedKey(channel)
-	bz := ctx.KVStore(k.storeKey).Get(key)
-
-	total, _ := sdk.ParseCoinsNormalized(string(bz))
+func (k *Keeper) GetTotalForwarded(ctx context.Context, channel string) sdk.Coins {
+	rawTotal, _ := k.TotalForwarded.Get(ctx, channel)
+	total, _ := sdk.ParseCoinsNormalized(rawTotal)
 	return total
 }
 
-func (k *Keeper) GetAllTotalForwarded(ctx sdk.Context) map[string]string {
+func (k *Keeper) GetAllTotalForwarded(ctx context.Context) map[string]string {
 	totals := make(map[string]string)
 
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.TotalForwardedPrefix)
-	iterator := sdk.KVStorePrefixIterator(store, nil)
+	_ = k.TotalForwarded.Walk(ctx, nil, func(key string, value string) (stop bool, err error) {
+		totals[key] = value
 
-	for ; iterator.Valid(); iterator.Next() {
-		channel := string(iterator.Key())
-		total := string(iterator.Value())
-
-		totals[channel] = total
-	}
+		return false, nil
+	})
 
 	return totals
 }
 
-func (k *Keeper) IncrementTotalForwarded(ctx sdk.Context, channel string, coin sdk.Coin) {
+func (k *Keeper) IncrementTotalForwarded(ctx context.Context, channel string, coin sdk.Coin) {
 	total := k.GetTotalForwarded(ctx, channel)
-
-	key := types.TotalForwardedKey(channel)
-	bz := []byte(total.Add(coin).String())
-
-	ctx.KVStore(k.storeKey).Set(key, bz)
-}
-
-func (k *Keeper) SetTotalForwarded(ctx sdk.Context, channel string, total sdk.Coins) {
-	key := types.TotalForwardedKey(channel)
-	bz := []byte(total.String())
-
-	ctx.KVStore(k.storeKey).Set(key, bz)
+	_ = k.TotalForwarded.Set(ctx, channel, total.Add(coin).String())
 }
 
 // TRANSIENT STATE
 
-func (k *Keeper) GetPendingForwards(ctx sdk.Context) (accounts []types.ForwardingAccount) {
-	itr := ctx.TransientStore(k.transientKey).Iterator(types.PendingForwardsPrefix, nil)
+func (k *Keeper) GetPendingForwards(ctx context.Context) (accounts []types.ForwardingAccount) {
+	_ = k.PendingForwards.Walk(ctx, nil, func(key string, value types.ForwardingAccount) (stop bool, err error) {
+		accounts = append(accounts, value)
 
-	for ; itr.Valid(); itr.Next() {
-		var account types.ForwardingAccount
-		k.cdc.MustUnmarshal(itr.Value(), &account)
-
-		accounts = append(accounts, account)
-	}
+		return false, nil
+	})
 
 	return
 }
 
-func (k *Keeper) HasPendingForward(ctx sdk.Context, account *types.ForwardingAccount) bool {
-	key := types.PendingForwardsKey(account)
-	bz := ctx.TransientStore(k.transientKey).Get(key)
-
-	return bz != nil
-}
-
-func (k *Keeper) SetPendingForward(ctx sdk.Context, account *types.ForwardingAccount) {
-	if k.HasPendingForward(ctx, account) {
+func (k *Keeper) SetPendingForward(ctx context.Context, account *types.ForwardingAccount) {
+	if found, err := k.PendingForwards.Has(ctx, account.Address); err != nil || found {
 		return
 	}
 
-	key := types.PendingForwardsKey(account)
-	bz := k.cdc.MustMarshal(account)
-
-	ctx.TransientStore(k.transientKey).Set(key, bz)
+	_ = k.PendingForwards.Set(ctx, account.Address, *account)
 }
