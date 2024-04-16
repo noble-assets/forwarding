@@ -153,10 +153,6 @@ func NewSimApp(
 		panic(err)
 	}
 
-	// TODO(@john): This should be done via depinject.
-	// https://github.com/cosmos/cosmos-sdk/issues/19979
-	app.BankKeeper.AppendSendRestriction(app.ForwardingKeeper.SendRestrictionFn)
-
 	if err := app.RegisterStreamingServices(appOpts, app.kvStoreKeys()); err != nil {
 		return nil, err
 	}

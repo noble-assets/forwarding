@@ -88,7 +88,10 @@ func (m Middleware) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, re
 			}
 		}
 
-		receiver := sdk.MustAccAddressFromBech32(transferData.Receiver)
+		receiver, err := m.authKeeper.AddressCodec().StringToBytes(transferData.Receiver)
+		if err != nil {
+			return m.app.OnRecvPacket(ctx, packet, relayer)
+		}
 
 		rawAccount := m.authKeeper.GetAccount(ctx, receiver)
 		if rawAccount == nil {

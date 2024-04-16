@@ -78,7 +78,10 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 }
 
 func (k *Keeper) ClearAccount(ctx context.Context, msg *types.MsgClearAccount) (*types.MsgClearAccountResponse, error) {
-	address := sdk.MustAccAddressFromBech32(msg.Address)
+	address, err := k.authKeeper.AddressCodec().StringToBytes(msg.Address)
+	if err != nil {
+		return nil, errors.New("invalid account address")
+	}
 
 	rawAccount := k.authKeeper.GetAccount(ctx, address)
 	if rawAccount == nil {

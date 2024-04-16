@@ -3,6 +3,7 @@ package types
 import (
 	"context"
 
+	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -10,6 +11,7 @@ import (
 )
 
 type AccountKeeper interface {
+	AddressCodec() address.Codec
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
 	HasAccount(ctx context.Context, addr sdk.AccAddress) bool
 	NewAccountWithAddress(ctx context.Context, addr sdk.AccAddress) sdk.AccountI

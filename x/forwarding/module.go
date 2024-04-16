@@ -17,6 +17,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	modulev1 "github.com/noble-assets/forwarding/api/noble/forwarding/module/v1"
 	forwardingv1 "github.com/noble-assets/forwarding/api/noble/forwarding/v1"
@@ -182,8 +183,9 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	Keeper *keeper.Keeper
-	Module appmodule.AppModule
+	Keeper      *keeper.Keeper
+	Module      appmodule.AppModule
+	Restriction banktypes.SendRestrictionFn
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -199,5 +201,5 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	)
 	m := NewAppModule(k)
 
-	return ModuleOutputs{Keeper: k, Module: m}
+	return ModuleOutputs{Keeper: k, Module: m, Restriction: k.SendRestrictionFn}
 }
