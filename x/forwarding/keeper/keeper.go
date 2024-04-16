@@ -43,6 +43,8 @@ func NewKeeper(
 	transientService store.TransientStoreService,
 	authKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+	channelKeeper types.ChannelKeeper,
+	transferKeeper types.TransferKeeper,
 ) *Keeper {
 	builder := collections.NewSchemaBuilder(storeService)
 	transientBuilder := collections.NewSchemaBuilderFromAccessor(transientService.OpenTransientStore)
@@ -59,8 +61,10 @@ func NewKeeper(
 
 		PendingForwards: collections.NewMap(transientBuilder, types.PendingForwardsPrefix, "pending_forwards", collections.StringKey, codec.CollValue[types.ForwardingAccount](cdc)),
 
-		authKeeper: authKeeper,
-		bankKeeper: bankKeeper,
+		authKeeper:     authKeeper,
+		bankKeeper:     bankKeeper,
+		channelKeeper:  channelKeeper,
+		transferKeeper: transferKeeper,
 	}
 
 	schema, err := builder.Build()
