@@ -194,6 +194,8 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.TransientService,
 		in.AccountKeeper,
 		in.BankKeeper,
+		nil,
+		nil,
 	)
 	m := NewAppModule(k)
 
