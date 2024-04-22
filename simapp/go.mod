@@ -13,9 +13,9 @@ require (
 	cosmossdk.io/x/upgrade v0.1.1
 	github.com/cometbft/cometbft v0.38.6
 	github.com/cosmos/cosmos-db v1.0.2
-	github.com/cosmos/cosmos-sdk v0.50.6-0.20240415212952-dafcc78dfd9c
+	github.com/cosmos/cosmos-sdk v0.50.6
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
-	github.com/cosmos/ibc-go/v8 v8.1.1
+	github.com/cosmos/ibc-go/v8 v8.2.0
 	github.com/noble-assets/forwarding v1.0.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
@@ -53,7 +53,7 @@ require (
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/cometbft/cometbft-db v0.9.1 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
-	github.com/cosmos/cosmos-proto v1.0.0-beta.4 // indirect
+	github.com/cosmos/cosmos-proto v1.0.0-beta.5 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/gogoproto v1.4.12 // indirect
@@ -124,7 +124,7 @@ require (
 	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/lib/pq v1.10.7 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/linxGnu/grocksdb v1.8.14 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
