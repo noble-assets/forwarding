@@ -26,7 +26,7 @@ import (
 )
 
 // ConsensusVersion defines the current x/forwarding module consensus version.
-const ConsensusVersion = 1
+const ConsensusVersion = 2
 
 var (
 	_ module.AppModuleBasic      = AppModule{}
@@ -116,6 +116,11 @@ func (m AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawM
 func (m AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), m.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), m.keeper)
+
+	migrator := keeper.NewMigrator(m.keeper)
+	if err := cfg.RegisterMigration(types.ModuleName, 1, migrator.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/forwarding from version 1 to 2: %v", err))
+	}
 }
 
 //
