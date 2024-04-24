@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/noble-assets/forwarding/x/forwarding/types"
+	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
 )
 
 var _ types.QueryServer = &Keeper{}

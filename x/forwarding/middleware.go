@@ -8,8 +8,8 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
-	"github.com/noble-assets/forwarding/x/forwarding/keeper"
-	"github.com/noble-assets/forwarding/x/forwarding/types"
+	"github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
+	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
 )
 
 var _ porttypes.IBCModule = &Middleware{}
