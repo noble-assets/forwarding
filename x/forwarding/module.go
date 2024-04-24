@@ -7,6 +7,7 @@ import (
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
@@ -177,9 +178,10 @@ type ModuleInputs struct {
 
 	Config           *modulev1.Module
 	Cdc              codec.Codec
+	Logger           log.Logger
 	StoreService     store.KVStoreService
 	TransientService store.TransientStoreService
-	Logger           log.Logger
+	HeaderService    header.Service
 
 	AccountKeeper types.AccountKeeper
 	BankKeeper    types.BankKeeper
@@ -199,6 +201,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.Logger,
 		in.StoreService,
 		in.TransientService,
+		in.HeaderService,
 		in.AccountKeeper,
 		in.BankKeeper,
 		nil,

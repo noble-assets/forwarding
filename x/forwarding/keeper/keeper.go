@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
+	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 
@@ -21,6 +22,7 @@ type Keeper struct {
 	logger           log.Logger
 	storeService     store.KVStoreService
 	transientService store.TransientStoreService
+	headerService    header.Service
 
 	Schema         collections.Schema
 	NumOfAccounts  collections.Map[string, uint64]
@@ -41,6 +43,7 @@ func NewKeeper(
 	logger log.Logger,
 	storeService store.KVStoreService,
 	transientService store.TransientStoreService,
+	headerService header.Service,
 	authKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	channelKeeper types.ChannelKeeper,
@@ -54,6 +57,7 @@ func NewKeeper(
 		logger:           logger,
 		storeService:     storeService,
 		transientService: transientService,
+		headerService:    headerService,
 
 		NumOfAccounts:  collections.NewMap(builder, types.NumOfAccountsPrefix, "num_of_accounts", collections.StringKey, collections.Uint64Value),
 		NumOfForwards:  collections.NewMap(builder, types.NumOfForwardsPrefix, "num_of_forwards", collections.StringKey, collections.Uint64Value),
@@ -83,15 +87,13 @@ func NewKeeper(
 
 // ExecuteForwards is an end block hook that clears all pending forwards from transient state.
 func (k *Keeper) ExecuteForwards(ctx context.Context) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
 	forwards := k.GetPendingForwards(ctx)
 	if len(forwards) > 0 {
 		k.Logger().Info(fmt.Sprintf("executing %d automatic forward(s)", len(forwards)))
 	}
 
 	for _, forward := range forwards {
-		channel, _ := k.channelKeeper.GetChannel(sdkCtx, transfertypes.PortID, forward.Channel)
+		channel, _ := k.channelKeeper.GetChannel(sdk.UnwrapSDKContext(ctx), transfertypes.PortID, forward.Channel)
 		if channel.State != channeltypes.OPEN {
 			k.Logger().Error("skipped automatic forward due to non open channel", "channel", forward.Channel, "address", forward.GetAddress().String(), "state", channel.State.String())
 			continue
@@ -100,7 +102,7 @@ func (k *Keeper) ExecuteForwards(ctx context.Context) {
 		balances := k.bankKeeper.GetAllBalances(ctx, forward.GetAddress())
 
 		for _, balance := range balances {
-			timeout := uint64(sdkCtx.BlockTime().UnixNano()) + transfertypes.DefaultRelativePacketTimeoutTimestamp
+			timeout := uint64(k.headerService.GetHeaderInfo(ctx).Time.UnixNano()) + transfertypes.DefaultRelativePacketTimeoutTimestamp
 			_, err := k.transferKeeper.Transfer(ctx, &transfertypes.MsgTransfer{
 				SourcePort:       transfertypes.PortID,
 				SourceChannel:    forward.Channel,
