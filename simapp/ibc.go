@@ -18,7 +18,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	soloclient "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
 	tmclient "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-	"github.com/noble-assets/forwarding/x/forwarding"
+	"github.com/noble-assets/forwarding/v2/x/forwarding"
 )
 
 func (app *SimApp) RegisterIBCModules() error {

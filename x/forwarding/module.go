@@ -18,10 +18,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	modulev1 "github.com/noble-assets/forwarding/api/noble/forwarding/module/v1"
-	forwardingv1 "github.com/noble-assets/forwarding/api/noble/forwarding/v1"
-	"github.com/noble-assets/forwarding/x/forwarding/keeper"
-	"github.com/noble-assets/forwarding/x/forwarding/types"
+	modulev1 "github.com/noble-assets/forwarding/v2/api/noble/forwarding/module/v1"
+	forwardingv1 "github.com/noble-assets/forwarding/v2/api/noble/forwarding/v1"
+	"github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
+	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
 )
 
 // ConsensusVersion defines the current x/forwarding module consensus version.
