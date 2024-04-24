@@ -16,7 +16,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.6
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/v8 v8.2.0
-	github.com/noble-assets/forwarding v1.0.0
+	github.com/noble-assets/forwarding/v2 v2.0.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 )
@@ -198,4 +198,4 @@ require (
 )
 
 // use local noble-assets/forwarding
-replace github.com/noble-assets/forwarding => ../
+replace github.com/noble-assets/forwarding/v2 => ../

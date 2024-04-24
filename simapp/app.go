@@ -32,18 +32,18 @@ import (
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	forwardingkeeper "github.com/noble-assets/forwarding/x/forwarding/keeper"
+	forwardingkeeper "github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
 
-	_ "cosmossdk.io/api/cosmos/tx/config/v1"            // import for side-effects
-	_ "cosmossdk.io/x/upgrade"                          // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/auth"             // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"   // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/bank"             // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/consensus"        // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/distribution"     // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/params"           // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/staking"          // import for side-effects
-	_ "github.com/noble-assets/forwarding/x/forwarding" // import for side-effects
+	_ "cosmossdk.io/api/cosmos/tx/config/v1"               // import for side-effects
+	_ "cosmossdk.io/x/upgrade"                             // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/auth"                // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"      // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/bank"                // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/consensus"           // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/distribution"        // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/params"              // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/staking"             // import for side-effects
+	_ "github.com/noble-assets/forwarding/v2/x/forwarding" // import for side-effects
 )
 
 var DefaultNodeHome string
