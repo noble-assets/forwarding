@@ -363,13 +363,9 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 var (
 	pattern_Query_Address_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"noble", "forwarding", "v1", "address", "channel", "recipient"}, "", runtime.AssumeColonVerbOpt(true)))
 
-<<<<<<< HEAD
-	pattern_Query_StatsByChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"noble", "forwarding", "v1", "stats", "channel"}, "", runtime.AssumeColonVerbOpt(true)))
-=======
-	pattern_Query_Stats_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"noble", "forwarding", "v1", "stats"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_Stats_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"noble", "forwarding", "v1", "stats"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_StatsByChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"noble", "forwarding", "v1", "stats", "channel"}, "", runtime.AssumeColonVerbOpt(false)))
->>>>>>> 8ab8bfa (feat: add general stats query (#5))
+	pattern_Query_StatsByChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"noble", "forwarding", "v1", "stats", "channel"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

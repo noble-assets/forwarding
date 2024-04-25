@@ -57,12 +57,10 @@ message QueryStatsByChannelResponse {
 //
 
 message Stats {
-  string chain_id = 1 [(amino.dont_omitempty) = true];
-  uint64 num_of_accounts = 2 [(amino.dont_omitempty) = true];
-  uint64 num_of_forwards = 3 [(amino.dont_omitempty) = true];
+  string chain_id = 1;
+  uint64 num_of_accounts = 2;
+  uint64 num_of_forwards = 3;
   repeated cosmos.base.v1beta1.Coin total_forwarded = 4 [
-    (amino.dont_omitempty) = true,
-    (amino.encoding) = "legacy_coins",
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];

@@ -5,12 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-<<<<<<< HEAD
+	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
 	"github.com/noble-assets/forwarding/x/forwarding/types"
-=======
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
->>>>>>> 8ab8bfa (feat: add general stats query (#5))
 )
 
 var _ types.QueryServer = &Keeper{}
@@ -35,21 +31,19 @@ func (k *Keeper) Address(goCtx context.Context, req *types.QueryAddress) (*types
 	}, nil
 }
 
-<<<<<<< HEAD
-func (k *Keeper) StatsByChannel(goCtx context.Context, req *types.QueryStatsByChannel) (*types.QueryStatsByChannelResponse, error) {
-=======
-func (k *Keeper) Stats(ctx context.Context, req *types.QueryStats) (*types.QueryStatsResponse, error) {
+func (k *Keeper) Stats(goCtx context.Context, req *types.QueryStats) (*types.QueryStatsResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
 
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	stats := make(map[string]types.Stats)
 
 	for channel, numOfAccounts := range k.GetAllNumOfAccounts(ctx) {
-		numOfForwards, _ := k.NumOfForwards.Get(ctx, channel)
+		numOfForwards := k.GetNumOfForwards(ctx, channel)
 		totalForwarded := k.GetTotalForwarded(ctx, channel)
 
-		_, clientState, _ := k.channelKeeper.GetChannelClientState(sdk.UnwrapSDKContext(ctx), transfertypes.PortID, channel)
+		_, clientState, _ := k.channelKeeper.GetChannelClientState(ctx, transfertypes.PortID, channel)
 
 		stats[channel] = types.Stats{
 			ChainId:        types.ParseChainId(clientState),
@@ -62,8 +56,7 @@ func (k *Keeper) Stats(ctx context.Context, req *types.QueryStats) (*types.Query
 	return &types.QueryStatsResponse{Stats: stats}, nil
 }
 
-func (k *Keeper) StatsByChannel(ctx context.Context, req *types.QueryStatsByChannel) (*types.QueryStatsByChannelResponse, error) {
->>>>>>> 8ab8bfa (feat: add general stats query (#5))
+func (k *Keeper) StatsByChannel(goCtx context.Context, req *types.QueryStatsByChannel) (*types.QueryStatsByChannelResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
