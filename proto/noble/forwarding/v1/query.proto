@@ -13,6 +13,11 @@ service Query {
     option (google.api.http).get = "/noble/forwarding/v1/address/{channel}/{recipient}";
   }
 
+  rpc Stats(QueryStats) returns (QueryStatsResponse) {
+    // NOTE: This is intentionally not a module safe query.
+    option (google.api.http).get = "/noble/forwarding/v1/stats";
+  }
+
   rpc StatsByChannel(QueryStatsByChannel) returns (QueryStatsByChannelResponse) {
     option (google.api.http).get = "/noble/forwarding/v1/stats/{channel}";
   }
@@ -30,6 +35,12 @@ message QueryAddressResponse {
   bool exists = 2;
 }
 
+message QueryStats {}
+
+message QueryStatsResponse {
+  map<string, Stats> stats = 1 [(gogoproto.nullable) = false];
+}
+
 message QueryStatsByChannel {
   string channel = 1;
 }
@@ -38,6 +49,20 @@ message QueryStatsByChannelResponse {
   uint64 num_of_accounts = 1;
   uint64 num_of_forwards = 2;
   repeated cosmos.base.v1beta1.Coin total_forwarded = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+//
+
+message Stats {
+  string chain_id = 1 [(amino.dont_omitempty) = true];
+  uint64 num_of_accounts = 2 [(amino.dont_omitempty) = true];
+  uint64 num_of_forwards = 3 [(amino.dont_omitempty) = true];
+  repeated cosmos.base.v1beta1.Coin total_forwarded = 4 [
+    (amino.dont_omitempty) = true,
+    (amino.encoding) = "legacy_coins",
     (gogoproto.nullable) = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
