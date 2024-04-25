@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Query_Address_FullMethodName        = "/noble.forwarding.v1.Query/Address"
+	Query_Stats_FullMethodName          = "/noble.forwarding.v1.Query/Stats"
 	Query_StatsByChannel_FullMethodName = "/noble.forwarding.v1.Query/StatsByChannel"
 )
 
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type QueryClient interface {
 	Address(ctx context.Context, in *QueryAddress, opts ...grpc.CallOption) (*QueryAddressResponse, error)
+	Stats(ctx context.Context, in *QueryStats, opts ...grpc.CallOption) (*QueryStatsResponse, error)
 	StatsByChannel(ctx context.Context, in *QueryStatsByChannel, opts ...grpc.CallOption) (*QueryStatsByChannelResponse, error)
 }
 
@@ -48,6 +50,15 @@ func (c *queryClient) Address(ctx context.Context, in *QueryAddress, opts ...grp
 	return out, nil
 }
 
+func (c *queryClient) Stats(ctx context.Context, in *QueryStats, opts ...grpc.CallOption) (*QueryStatsResponse, error) {
+	out := new(QueryStatsResponse)
+	err := c.cc.Invoke(ctx, Query_Stats_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) StatsByChannel(ctx context.Context, in *QueryStatsByChannel, opts ...grpc.CallOption) (*QueryStatsByChannelResponse, error) {
 	out := new(QueryStatsByChannelResponse)
 	err := c.cc.Invoke(ctx, Query_StatsByChannel_FullMethodName, in, out, opts...)
@@ -62,6 +73,7 @@ func (c *queryClient) StatsByChannel(ctx context.Context, in *QueryStatsByChanne
 // for forward compatibility
 type QueryServer interface {
 	Address(context.Context, *QueryAddress) (*QueryAddressResponse, error)
+	Stats(context.Context, *QueryStats) (*QueryStatsResponse, error)
 	StatsByChannel(context.Context, *QueryStatsByChannel) (*QueryStatsByChannelResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
@@ -72,6 +84,9 @@ type UnimplementedQueryServer struct {
 
 func (UnimplementedQueryServer) Address(context.Context, *QueryAddress) (*QueryAddressResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Address not implemented")
+}
+func (UnimplementedQueryServer) Stats(context.Context, *QueryStats) (*QueryStatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Stats not implemented")
 }
 func (UnimplementedQueryServer) StatsByChannel(context.Context, *QueryStatsByChannel) (*QueryStatsByChannelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StatsByChannel not implemented")
@@ -107,6 +122,24 @@ func _Query_Address_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Stats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStats)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Stats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Stats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Stats(ctx, req.(*QueryStats))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_StatsByChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryStatsByChannel)
 	if err := dec(in); err != nil {
@@ -135,6 +168,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Address",
 			Handler:    _Query_Address_Handler,
+		},
+		{
+			MethodName: "Stats",
+			Handler:    _Query_Stats_Handler,
 		},
 		{
 			MethodName: "StatsByChannel",
