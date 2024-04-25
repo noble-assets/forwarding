@@ -22,8 +22,10 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	modulev1 "github.com/noble-assets/forwarding/v2/api/noble/forwarding/module/v1"
 	forwardingv1 "github.com/noble-assets/forwarding/v2/api/noble/forwarding/v1"
+	"github.com/noble-assets/forwarding/v2/x/forwarding/client/cli"
 	"github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
 	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
+	"github.com/spf13/cobra"
 )
 
 // ConsensusVersion defines the current x/forwarding module consensus version.
@@ -154,15 +156,23 @@ func (AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:          "Query forwarding address by channel and recipient",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "channel"}, {ProtoField: "recipient"}},
 				},
+				// NOTE: We combine the Stats and StatsByChannel methods together in a custom command.
 				{
-					RpcMethod:      "StatsByChannel",
-					Use:            "stats [channel]",
-					Short:          "Query forwarding stats by channel",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "channel"}},
+					RpcMethod: "Stats",
+					Skip:      true,
+				},
+				{
+					RpcMethod: "StatsByChannel",
+					Skip:      true,
 				},
 			},
+			EnhanceCustomCommand: true,
 		},
 	}
+}
+
+func (AppModule) GetQueryCmd() *cobra.Command {
+	return cli.GetQueryCmd()
 }
 
 //

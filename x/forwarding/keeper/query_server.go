@@ -3,7 +3,9 @@ package keeper
 import (
 	"context"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
 )
 
@@ -26,6 +28,30 @@ func (k *Keeper) Address(ctx context.Context, req *types.QueryAddress) (*types.Q
 		Address: address.String(),
 		Exists:  exists,
 	}, nil
+}
+
+func (k *Keeper) Stats(ctx context.Context, req *types.QueryStats) (*types.QueryStatsResponse, error) {
+	if req == nil {
+		return nil, errors.ErrInvalidRequest
+	}
+
+	stats := make(map[string]types.Stats)
+
+	for channel, numOfAccounts := range k.GetAllNumOfAccounts(ctx) {
+		numOfForwards, _ := k.NumOfForwards.Get(ctx, channel)
+		totalForwarded := k.GetTotalForwarded(ctx, channel)
+
+		_, clientState, _ := k.channelKeeper.GetChannelClientState(sdk.UnwrapSDKContext(ctx), transfertypes.PortID, channel)
+
+		stats[channel] = types.Stats{
+			ChainId:        types.ParseChainId(clientState),
+			NumOfAccounts:  numOfAccounts,
+			NumOfForwards:  numOfForwards,
+			TotalForwarded: totalForwarded,
+		}
+	}
+
+	return &types.QueryStatsResponse{Stats: stats}, nil
 }
 
 func (k *Keeper) StatsByChannel(ctx context.Context, req *types.QueryStatsByChannel) (*types.QueryStatsByChannelResponse, error) {
