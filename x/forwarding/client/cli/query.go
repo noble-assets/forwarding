@@ -20,12 +20,12 @@ func GetQueryCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(CmdQueryStats())
+	cmd.AddCommand(QueryStats())
 
 	return cmd
 }
 
-func CmdQueryStats() *cobra.Command {
+func QueryStats() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stats (channel)",
 		Short: "Query forwarding stats",
