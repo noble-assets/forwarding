@@ -1,8 +1,8 @@
 package types
 
 import (
-	"github.com/cosmos/ibc-go/v8/modules/core/exported"
-	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	"github.com/cosmos/ibc-go/v4/modules/core/exported"
+	tendermint "github.com/cosmos/ibc-go/v4/modules/light-clients/07-tendermint/types"
 )
 
 func ParseChainId(rawClientState exported.ClientState) string {
