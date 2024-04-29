@@ -3,6 +3,7 @@ modules:
     config:
       "@type": cosmos.app.runtime.v1alpha1.Module
       app_name: SimApp
+      pre_blockers: [ upgrade ]
       begin_blockers: [ capability, distribution, staking, ibc ]
       end_blockers: [ staking, forwarding ]
       init_genesis: [ capability, auth, bank, distribution, staking, ibc, genutil, transfer, upgrade, forwarding ]
