@@ -5,6 +5,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 var (
@@ -24,6 +25,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.AccountI)(nil), &ForwardingAccount{})
+	registry.RegisterImplementations((*authtypes.GenesisAccount)(nil), &ForwardingAccount{})
 
 	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgRegisterAccount{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgClearAccount{})
