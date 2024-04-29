@@ -14,7 +14,6 @@ service Query {
   }
 
   rpc Stats(QueryStats) returns (QueryStatsResponse) {
-    // NOTE: This is intentionally not a module safe query.
     option (google.api.http).get = "/noble/forwarding/v1/stats";
   }
 

@@ -1,0 +1,1 @@
+- Implement generic stats query across all channels. ([#5](https://github.com/noble-assets/forwarding/pull/5))
