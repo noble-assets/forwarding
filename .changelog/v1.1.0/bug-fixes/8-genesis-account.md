@@ -1,0 +1,1 @@
+- Register forwarding accounts as a `GenesisAccount` implementation. ([#8](https://github.com/noble-assets/forwarding/pull/8))

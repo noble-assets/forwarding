@@ -21,8 +21,7 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 
 	address := types.GenerateAddress(msg.Channel, msg.Recipient)
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	channel, found := k.channelKeeper.GetChannel(sdkCtx, transfertypes.PortID, msg.Channel)
+	channel, found := k.channelKeeper.GetChannel(sdk.UnwrapSDKContext(ctx), transfertypes.PortID, msg.Channel)
 	if !found {
 		return nil, fmt.Errorf("channel does not exist: %s", msg.Channel)
 	}
@@ -42,7 +41,7 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 				BaseAccount: account,
 				Channel:     msg.Channel,
 				Recipient:   msg.Recipient,
-				CreatedAt:   sdkCtx.BlockHeight(),
+				CreatedAt:   k.headerService.GetHeaderInfo(ctx).Height,
 			}
 			k.authKeeper.SetAccount(ctx, rawAccount)
 
@@ -68,7 +67,7 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 		BaseAccount: authtypes.NewBaseAccount(base.GetAddress(), base.GetPubKey(), base.GetAccountNumber(), base.GetSequence()),
 		Channel:     msg.Channel,
 		Recipient:   msg.Recipient,
-		CreatedAt:   sdkCtx.BlockHeight(),
+		CreatedAt:   k.headerService.GetHeaderInfo(ctx).Height,
 	}
 
 	k.authKeeper.SetAccount(ctx, &account)
@@ -78,7 +77,10 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 }
 
 func (k *Keeper) ClearAccount(ctx context.Context, msg *types.MsgClearAccount) (*types.MsgClearAccountResponse, error) {
-	address := sdk.MustAccAddressFromBech32(msg.Address)
+	address, err := k.authKeeper.AddressCodec().StringToBytes(msg.Address)
+	if err != nil {
+		return nil, errors.New("invalid account address")
+	}
 
 	rawAccount := k.authKeeper.GetAccount(ctx, address)
 	if rawAccount == nil {

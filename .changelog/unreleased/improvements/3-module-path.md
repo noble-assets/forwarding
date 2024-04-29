@@ -1,0 +1,1 @@
+- Bump module path to `v2` to align with Golang conventions. ([#3](https://github.com/noble-assets/forwarding/pull/3))

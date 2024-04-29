@@ -21,11 +21,11 @@ func GenerateAddress(channel string, recipient string) sdk.AccAddress {
 
 func (fa *ForwardingAccount) Validate() error {
 	if !channeltypes.IsValidChannelID(fa.Channel) {
-		return fmt.Errorf("channel id (%s) is invalid for account %s", fa.Channel, fa.Address)
+		return fmt.Errorf("%s is an invalid channel id", fa.Channel)
 	}
 
 	if fa.CreatedAt < 0 {
-		return fmt.Errorf("%d is an invalid creation height for account %s", fa.CreatedAt, fa.Address)
+		return fmt.Errorf("%d is an invalid creation block height", fa.CreatedAt)
 	}
 
 	return fa.BaseAccount.Validate()

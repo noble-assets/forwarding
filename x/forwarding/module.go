@@ -7,6 +7,7 @@ import (
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
@@ -17,6 +18,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	modulev1 "github.com/noble-assets/forwarding/v2/api/noble/forwarding/module/v1"
 	forwardingv1 "github.com/noble-assets/forwarding/v2/api/noble/forwarding/v1"
@@ -27,7 +29,7 @@ import (
 )
 
 // ConsensusVersion defines the current x/forwarding module consensus version.
-const ConsensusVersion = 1
+const ConsensusVersion = 2
 
 var (
 	_ module.AppModuleBasic      = AppModule{}
@@ -117,6 +119,11 @@ func (m AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawM
 func (m AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), m.keeper)
 	types.RegisterQueryServer(cfg.QueryServer(), m.keeper)
+
+	migrator := keeper.NewMigrator(m.keeper)
+	if err := cfg.RegisterMigration(types.ModuleName, 1, migrator.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/forwarding from version 1 to 2: %v", err))
+	}
 }
 
 //
@@ -181,9 +188,10 @@ type ModuleInputs struct {
 
 	Config           *modulev1.Module
 	Cdc              codec.Codec
+	Logger           log.Logger
 	StoreService     store.KVStoreService
 	TransientService store.TransientStoreService
-	Logger           log.Logger
+	HeaderService    header.Service
 
 	AccountKeeper types.AccountKeeper
 	BankKeeper    types.BankKeeper
@@ -192,8 +200,9 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	Keeper *keeper.Keeper
-	Module appmodule.AppModule
+	Keeper      *keeper.Keeper
+	Module      appmodule.AppModule
+	Restriction banktypes.SendRestrictionFn
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -202,6 +211,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.Logger,
 		in.StoreService,
 		in.TransientService,
+		in.HeaderService,
 		in.AccountKeeper,
 		in.BankKeeper,
 		nil,
@@ -209,5 +219,5 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	)
 	m := NewAppModule(k)
 
-	return ModuleOutputs{Keeper: k, Module: m}
+	return ModuleOutputs{Keeper: k, Module: m, Restriction: k.SendRestrictionFn}
 }
