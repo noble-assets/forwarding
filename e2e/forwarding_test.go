@@ -214,7 +214,6 @@ func ForwardingSuite(t *testing.T) (ctx context.Context, noble *cosmos.CosmosCha
 	factory := interchaintest.NewBuiltinChainFactory(logger, []*interchaintest.ChainSpec{
 		{
 			Name:          "forwarding",
-			Version:       "local",
 			NumValidators: &numValidators,
 			NumFullNodes:  &numFullNodes,
 			ChainConfig: ibc.ChainConfig{
