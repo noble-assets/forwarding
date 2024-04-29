@@ -25,6 +25,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*authtypes.AccountI)(nil), &ForwardingAccount{})
+	registry.RegisterImplementations((*authtypes.GenesisAccount)(nil), &ForwardingAccount{})
 
 	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgRegisterAccount{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgClearAccount{})
