@@ -6,11 +6,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 )
 
 var (
-	_ sdk.AccountI             = &ForwardingAccount{}
+	_ authtypes.AccountI       = &ForwardingAccount{}
 	_ authtypes.GenesisAccount = &ForwardingAccount{}
 )
 
