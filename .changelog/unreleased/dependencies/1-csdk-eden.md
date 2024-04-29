@@ -1,0 +1,1 @@
+- Upgrade Cosmos SDK from `v0.45.x` to `v0.50.x` ([#1](https://github.com/noble-assets/forwarding/pull/1))
