@@ -19,7 +19,12 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 		return nil, errors.New("invalid channel")
 	}
 
-	address := types.GenerateAddress(msg.Channel, msg.Recipient)
+	if msg.Fallback != "" {
+		if _, err := k.accountKeeper.AddressCodec().StringToBytes(msg.Fallback); err != nil {
+			return nil, errors.New("invalid fallback address")
+		}
+	}
+	address := types.GenerateAddress(msg.Channel, msg.Recipient, msg.Fallback)
 
 	channel, found := k.channelKeeper.GetChannel(sdk.UnwrapSDKContext(ctx), transfertypes.PortID, msg.Channel)
 	if !found {
@@ -29,8 +34,8 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 		return nil, fmt.Errorf("channel is not open: %s, %s", msg.Channel, channel.State)
 	}
 
-	if k.authKeeper.HasAccount(ctx, address) {
-		rawAccount := k.authKeeper.GetAccount(ctx, address)
+	if k.accountKeeper.HasAccount(ctx, address) {
+		rawAccount := k.accountKeeper.GetAccount(ctx, address)
 		if rawAccount.GetPubKey() != nil || rawAccount.GetSequence() != 0 {
 			return nil, fmt.Errorf("attempting to register an existing user account with address: %s", address.String())
 		}
@@ -42,8 +47,9 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 				Channel:     msg.Channel,
 				Recipient:   msg.Recipient,
 				CreatedAt:   k.headerService.GetHeaderInfo(ctx).Height,
+				Fallback:    msg.Fallback,
 			}
-			k.authKeeper.SetAccount(ctx, rawAccount)
+			k.accountKeeper.SetAccount(ctx, rawAccount)
 
 			k.IncrementNumOfAccounts(ctx, msg.Channel)
 		case *types.ForwardingAccount:
@@ -62,27 +68,28 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 		return &types.MsgRegisterAccountResponse{Address: address.String()}, nil
 	}
 
-	base := k.authKeeper.NewAccountWithAddress(ctx, address)
+	base := k.accountKeeper.NewAccountWithAddress(ctx, address)
 	account := types.ForwardingAccount{
 		BaseAccount: authtypes.NewBaseAccount(base.GetAddress(), base.GetPubKey(), base.GetAccountNumber(), base.GetSequence()),
 		Channel:     msg.Channel,
 		Recipient:   msg.Recipient,
 		CreatedAt:   k.headerService.GetHeaderInfo(ctx).Height,
+		Fallback:    msg.Fallback,
 	}
 
-	k.authKeeper.SetAccount(ctx, &account)
+	k.accountKeeper.SetAccount(ctx, &account)
 	k.IncrementNumOfAccounts(ctx, msg.Channel)
 
 	return &types.MsgRegisterAccountResponse{Address: address.String()}, nil
 }
 
 func (k *Keeper) ClearAccount(ctx context.Context, msg *types.MsgClearAccount) (*types.MsgClearAccountResponse, error) {
-	address, err := k.authKeeper.AddressCodec().StringToBytes(msg.Address)
+	address, err := k.accountKeeper.AddressCodec().StringToBytes(msg.Address)
 	if err != nil {
 		return nil, errors.New("invalid account address")
 	}
 
-	rawAccount := k.authKeeper.GetAccount(ctx, address)
+	rawAccount := k.accountKeeper.GetAccount(ctx, address)
 	if rawAccount == nil {
 		return nil, errors.New("account does not exist")
 	}
@@ -91,11 +98,21 @@ func (k *Keeper) ClearAccount(ctx context.Context, msg *types.MsgClearAccount) (
 		return nil, errors.New("account is not a forwarding account")
 	}
 
-	if k.bankKeeper.GetAllBalances(ctx, address).IsZero() {
+	balance := k.bankKeeper.GetAllBalances(ctx, address)
+	if balance.IsZero() {
 		return nil, errors.New("account does not require clearing")
 	}
 
-	k.SetPendingForward(ctx, account)
+	if !msg.Fallback || account.Fallback == "" {
+		k.SetPendingForward(ctx, account)
+		return &types.MsgClearAccountResponse{}, nil
+	}
+
+	fallback, _ := k.accountKeeper.AddressCodec().StringToBytes(account.Fallback)
+	err = k.bankKeeper.SendCoins(ctx, address, fallback, balance)
+	if err != nil {
+		return nil, errors.New("failed to clear balance to fallback account")
+	}
 
 	return &types.MsgClearAccountResponse{}, nil
 }

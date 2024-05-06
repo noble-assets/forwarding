@@ -66,6 +66,17 @@ func request_Query_Address_0(ctx context.Context, marshaler runtime.Marshaler, c
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "recipient", err)
 	}
 
+	val, ok = pathParams["fallback"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "fallback")
+	}
+
+	protoReq.Fallback, err = runtime.String(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "fallback", err)
+	}
+
 	msg, err := client.Address(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -102,6 +113,17 @@ func local_request_Query_Address_0(ctx context.Context, marshaler runtime.Marsha
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "recipient", err)
+	}
+
+	val, ok = pathParams["fallback"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "fallback")
+	}
+
+	protoReq.Fallback, err = runtime.String(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "fallback", err)
 	}
 
 	msg, err := server.Address(ctx, &protoReq)
@@ -361,7 +383,7 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Address_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"noble", "forwarding", "v1", "address", "channel", "recipient"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_Address_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6}, []string{"noble", "forwarding", "v1", "address", "channel", "recipient", "fallback"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_Stats_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"noble", "forwarding", "v1", "stats"}, "", runtime.AssumeColonVerbOpt(false)))
 

@@ -79,6 +79,7 @@ func (m Middleware) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, re
 					Signer:    authtypes.NewModuleAddress(types.ModuleName).String(),
 					Recipient: memo.Noble.Forwarding.Recipient,
 					Channel:   channel,
+					Fallback:  memo.Noble.Forwarding.Fallback,
 				}
 
 				_, err := m.keeper.RegisterAccount(ctx, req)
@@ -119,6 +120,7 @@ func (m Middleware) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, re
 	req := &types.MsgRegisterAccount{
 		Recipient: data.Recipient,
 		Channel:   channel,
+		Fallback:  data.Fallback,
 	}
 
 	res, err := m.keeper.RegisterAccount(ctx, req)

@@ -22,6 +22,7 @@ type AccountKeeper interface {
 type BankKeeper interface {
 	AppendSendRestriction(restriction banktypes.SendRestrictionFn)
 	GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coins
+	SendCoins(ctx context.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) error
 }
 
 type ChannelKeeper interface {

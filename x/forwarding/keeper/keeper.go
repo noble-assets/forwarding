@@ -32,7 +32,7 @@ type Keeper struct {
 	TransientSchema collections.Schema
 	PendingForwards collections.Map[string, types.ForwardingAccount]
 
-	authKeeper     types.AccountKeeper
+	accountKeeper  types.AccountKeeper
 	bankKeeper     types.BankKeeper
 	channelKeeper  types.ChannelKeeper
 	transferKeeper types.TransferKeeper
@@ -44,7 +44,7 @@ func NewKeeper(
 	storeService store.KVStoreService,
 	transientService store.TransientStoreService,
 	headerService header.Service,
-	authKeeper types.AccountKeeper,
+	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	channelKeeper types.ChannelKeeper,
 	transferKeeper types.TransferKeeper,
@@ -65,7 +65,7 @@ func NewKeeper(
 
 		PendingForwards: collections.NewMap(transientBuilder, types.PendingForwardsPrefix, "pending_forwards", collections.StringKey, codec.CollValue[types.ForwardingAccount](cdc)),
 
-		authKeeper:     authKeeper,
+		accountKeeper:  accountKeeper,
 		bankKeeper:     bankKeeper,
 		channelKeeper:  channelKeeper,
 		transferKeeper: transferKeeper,
@@ -129,7 +129,7 @@ func (k *Keeper) ExecuteForwards(ctx context.Context) {
 // SendRestrictionFn checks every transfer executed on the Noble chain to see if
 // the recipient is a forwarding account, allowing us to mark accounts for clearing.
 func (k *Keeper) SendRestrictionFn(ctx context.Context, _, toAddr sdk.AccAddress, _ sdk.Coins) (newToAddr sdk.AccAddress, err error) {
-	rawAccount := k.authKeeper.GetAccount(ctx, toAddr)
+	rawAccount := k.accountKeeper.GetAccount(ctx, toAddr)
 	if rawAccount == nil {
 		return toAddr, nil
 	}

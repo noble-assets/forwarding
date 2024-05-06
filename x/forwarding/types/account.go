@@ -14,8 +14,8 @@ var (
 	_ authtypes.GenesisAccount = &ForwardingAccount{}
 )
 
-func GenerateAddress(channel string, recipient string) sdk.AccAddress {
-	bz := []byte(channel + recipient)
+func GenerateAddress(channel string, recipient string, fallback string) sdk.AccAddress {
+	bz := []byte(channel + recipient + fallback)
 	return address.Derive([]byte(ModuleName), bz)[12:]
 }
 
