@@ -1,8 +1,6 @@
 name: End to End Tests
 
 on:
-  push:
-    branches: [ "main", "v*" ]
   pull_request:
 
 env:
