@@ -1,5 +1,6 @@
 - name: noble-forwarding-simd
   dockerfile: cosmos
   build-target: make build
+  build-dir: simapp
   binaries:
     - simapp/build/simd
