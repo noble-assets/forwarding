@@ -67,5 +67,5 @@ test: test-e2e
 
 test-e2e:
 	@echo "🤖 Running e2e tests..."
-	@cd e2e && go test -race -v ./...
+	@cd e2e && go test -timeout 15m -race -v ./...
 	@echo "✅ Completed e2e tests!"

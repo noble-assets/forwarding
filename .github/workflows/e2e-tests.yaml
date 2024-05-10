@@ -87,4 +87,4 @@ jobs:
         run: docker image load -i ${{ env.TAR_PATH }}
 
       - name: run test
-        run: cd e2e && go test -race -v -timeout 30m -run ^${{ matrix.test }}$ .
+        run: cd e2e && go test -race -v -timeout 15m -run ^${{ matrix.test }}$ .

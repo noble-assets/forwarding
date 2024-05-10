@@ -3,8 +3,9 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
+	errorstypes "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
 )
@@ -13,14 +14,21 @@ var _ types.QueryServer = &Keeper{}
 
 func (k *Keeper) Address(ctx context.Context, req *types.QueryAddress) (*types.QueryAddressResponse, error) {
 	if req == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
 
-	address := types.GenerateAddress(req.Channel, req.Recipient)
+	if req.Fallback != "" {
+		_, err := k.accountKeeper.AddressCodec().StringToBytes(req.Fallback)
+		if err != nil {
+			return nil, errors.Wrap(err, "invalid fallback address")
+		}
+	}
+
+	address := types.GenerateAddress(req.Channel, req.Recipient, req.Fallback)
 
 	exists := false
-	if k.authKeeper.HasAccount(ctx, address) {
-		account := k.authKeeper.GetAccount(ctx, address)
+	if k.accountKeeper.HasAccount(ctx, address) {
+		account := k.accountKeeper.GetAccount(ctx, address)
 		_, exists = account.(*types.ForwardingAccount)
 	}
 
@@ -32,7 +40,7 @@ func (k *Keeper) Address(ctx context.Context, req *types.QueryAddress) (*types.Q
 
 func (k *Keeper) Stats(ctx context.Context, req *types.QueryStats) (*types.QueryStatsResponse, error) {
 	if req == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
 
 	stats := make(map[string]types.Stats)
@@ -56,7 +64,7 @@ func (k *Keeper) Stats(ctx context.Context, req *types.QueryStats) (*types.Query
 
 func (k *Keeper) StatsByChannel(ctx context.Context, req *types.QueryStatsByChannel) (*types.QueryStatsByChannelResponse, error) {
 	if req == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
 
 	numOfAccounts, _ := k.NumOfAccounts.Get(ctx, req.Channel)

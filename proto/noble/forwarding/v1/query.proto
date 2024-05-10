@@ -14,7 +14,7 @@ option go_package = "github.com/noble-assets/forwarding/v2/x/forwarding/types";
 service Query {
   rpc Address(QueryAddress) returns (QueryAddressResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/noble/forwarding/v1/address/{channel}/{recipient}";
+    option (google.api.http).get = "/noble/forwarding/v1/address/{channel}/{recipient}/{fallback}";
   }
 
   rpc Stats(QueryStats) returns (QueryStatsResponse) {
@@ -36,6 +36,7 @@ message QueryAddress {
 
   string channel = 1;
   string recipient = 2;
+  string fallback = 3;
 }
 
 message QueryAddressResponse {

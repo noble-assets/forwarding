@@ -1,0 +1,1 @@
+- Support an optional fallback address for easy recovery of funds. ([#12](https://github.com/noble-assets/forwarding/pull/12))

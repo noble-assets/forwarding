@@ -16,4 +16,5 @@ message ForwardingAccount {
   string channel = 2;
   string recipient = 3;
   int64 created_at = 4;
+  string fallback = 5;
 }

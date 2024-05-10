@@ -12,7 +12,6 @@ import (
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -35,7 +34,7 @@ var (
 	_ module.AppModuleBasic      = AppModule{}
 	_ appmodule.AppModule        = AppModule{}
 	_ module.HasConsensusVersion = AppModule{}
-	_ module.HasABCIEndBlock     = AppModule{}
+	_ appmodule.HasEndBlocker    = AppModule{}
 	_ module.HasGenesis          = AppModule{}
 	_ module.HasServices         = AppModule{}
 )
@@ -98,10 +97,9 @@ func (AppModule) IsAppModule() {}
 
 func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
-func (m AppModule) EndBlock(ctx context.Context) ([]abci.ValidatorUpdate, error) {
+func (m AppModule) EndBlock(ctx context.Context) error {
 	m.keeper.ExecuteForwards(ctx)
-
-	return nil, nil
+	return nil
 }
 
 func (m AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, bz json.RawMessage) {
@@ -134,15 +132,25 @@ func (AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			Service: forwardingv1.Msg_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
-					RpcMethod:      "RegisterAccount",
-					Use:            "register-account [channel] [recipient]",
-					Short:          "Register a forwarding account for a channel and recipient",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "channel"}, {ProtoField: "recipient"}},
+					RpcMethod: "RegisterAccount",
+					Use:       "register-account [channel] [recipient] (fallback)",
+					Short:     "Register a forwarding account for a channel and recipient",
+					Long:      "Register a forwarding account for a channel and recipient, with an optional fallback address",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "channel"},
+						{ProtoField: "recipient"},
+						{ProtoField: "fallback", Optional: true},
+					},
 				},
 				{
-					RpcMethod:      "ClearAccount",
-					Use:            "clear-account [address]",
-					Short:          "Manually clear funds inside forwarding account",
+					RpcMethod: "ClearAccount",
+					Use:       "clear-account [address] (--fallback)",
+					Short:     "Manually clear funds inside forwarding account",
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"fallback": {
+							Usage: "Clear funds to fallback address, if exists",
+						},
+					},
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "address"}},
 				},
 			},
@@ -151,10 +159,15 @@ func (AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			Service: forwardingv1.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
-					RpcMethod:      "Address",
-					Use:            "address [channel] [recipient]",
-					Short:          "Query forwarding address by channel and recipient",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "channel"}, {ProtoField: "recipient"}},
+					RpcMethod: "Address",
+					Use:       "address [channel] [recipient] (fallback)",
+					Short:     "Query forwarding address by channel and recipient",
+					Long:      "Query forwarding address by channel and recipient, with an optional fallback address",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "channel"},
+						{ProtoField: "recipient"},
+						{ProtoField: "fallback", Optional: true},
+					},
 				},
 				// NOTE: We combine the Stats and StatsByChannel methods together in a custom command.
 				{
