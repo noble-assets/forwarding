@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	"cosmossdk.io/math"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/jsonpb"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -22,19 +22,19 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-func TestForwarding_RegisterOnNoble(t *testing.T) {
+func TestRegisterOnNoble(t *testing.T) {
 	t.Parallel()
 
-	ctx, noble, gaia, _, _, sender, receiver := ForwardingSuite(t)
+	ctx, noble, gaia, _, _, sender, _, receiver := ForwardingSuite(t)
 	validator := noble.Validators[0]
 
-	address, exists := ForwardingAccount(t, ctx, validator, receiver)
+	address, exists := ForwardingAccount(t, ctx, validator, receiver, "")
 	require.False(t, exists)
 
 	_, err := validator.ExecTx(ctx, sender.KeyName(), "forwarding", "register-account", "channel-0", receiver.FormattedAddress())
 	require.NoError(t, err)
 
-	_, exists = ForwardingAccount(t, ctx, validator, receiver)
+	_, exists = ForwardingAccount(t, ctx, validator, receiver, "")
 	require.True(t, exists)
 
 	require.NoError(t, validator.BankSend(ctx, sender.KeyName(), ibc.WalletAmount{
@@ -65,13 +65,13 @@ func TestForwarding_RegisterOnNoble(t *testing.T) {
 	require.Equal(t, sdk.NewCoins(sdk.NewCoin("uusdc", math.NewInt(1_000_000))), stats.TotalForwarded)
 }
 
-func TestForwarding_RegisterViaTransfer(t *testing.T) {
+func TestRegisterViaTransfer(t *testing.T) {
 	t.Parallel()
 
-	ctx, noble, gaia, _, _, _, receiver := ForwardingSuite(t)
+	ctx, noble, gaia, _, _, _, _, receiver := ForwardingSuite(t)
 	validator := noble.Validators[0]
 
-	address, exists := ForwardingAccount(t, ctx, validator, receiver)
+	address, exists := ForwardingAccount(t, ctx, validator, receiver, "")
 	require.False(t, exists)
 
 	tx, err := gaia.SendIBCTransfer(ctx, "channel-0", receiver.KeyName(), ibc.WalletAmount{
@@ -86,7 +86,7 @@ func TestForwarding_RegisterViaTransfer(t *testing.T) {
 
 	require.NoError(t, testutil.WaitForBlocks(ctx, 10, noble, gaia))
 
-	_, exists = ForwardingAccount(t, ctx, validator, receiver)
+	_, exists = ForwardingAccount(t, ctx, validator, receiver, "")
 	require.True(t, exists)
 
 	balance, err := noble.BankQueryAllBalances(ctx, address)
@@ -106,17 +106,17 @@ func TestForwarding_RegisterViaTransfer(t *testing.T) {
 	}.IBCDenom(), math.NewInt(100_000))), stats.TotalForwarded)
 }
 
-func TestForwarding_RegisterViaPacket(t *testing.T) {
+func TestRegisterViaPacket(t *testing.T) {
 	t.Skip()
 }
 
-func TestForwarding_FrontRunAccount(t *testing.T) {
+func TestFrontRunAccount(t *testing.T) {
 	t.Parallel()
 
-	ctx, noble, gaia, _, _, sender, receiver := ForwardingSuite(t)
+	ctx, noble, gaia, _, _, sender, _, receiver := ForwardingSuite(t)
 	validator := noble.Validators[0]
 
-	address, exists := ForwardingAccount(t, ctx, validator, receiver)
+	address, exists := ForwardingAccount(t, ctx, validator, receiver, "")
 	require.False(t, exists)
 
 	require.NoError(t, validator.BankSend(ctx, sender.KeyName(), ibc.WalletAmount{
@@ -125,13 +125,13 @@ func TestForwarding_FrontRunAccount(t *testing.T) {
 		Amount:  math.NewInt(1_000_000),
 	}))
 
-	_, exists = ForwardingAccount(t, ctx, validator, receiver)
+	_, exists = ForwardingAccount(t, ctx, validator, receiver, "")
 	require.False(t, exists)
 
 	_, err := validator.ExecTx(ctx, sender.KeyName(), "forwarding", "register-account", "channel-0", receiver.FormattedAddress())
 	require.NoError(t, err)
 
-	_, exists = ForwardingAccount(t, ctx, validator, receiver)
+	_, exists = ForwardingAccount(t, ctx, validator, receiver, "")
 	require.True(t, exists)
 
 	require.NoError(t, testutil.WaitForBlocks(ctx, 10, noble, gaia))
@@ -157,10 +157,162 @@ func TestForwarding_FrontRunAccount(t *testing.T) {
 	require.Equal(t, sdk.NewCoins(sdk.NewCoin("uusdc", math.NewInt(1_000_000))), stats.TotalForwarded)
 }
 
+func TestClearAccount(t *testing.T) {
+	t.Parallel()
+
+	ctx, noble, gaia, rly, execReporter, sender, _, receiver := ForwardingSuite(t)
+	validator := noble.Validators[0]
+
+	require.NoError(t, rly.StopRelayer(ctx, execReporter))
+
+	address, exists := ForwardingAccount(t, ctx, validator, receiver, "")
+	require.False(t, exists)
+
+	_, err := validator.ExecTx(ctx, sender.KeyName(), "forwarding", "register-account", "channel-0", receiver.FormattedAddress())
+	require.NoError(t, err)
+
+	_, exists = ForwardingAccount(t, ctx, validator, receiver, "")
+	require.True(t, exists)
+
+	require.NoError(t, validator.BankSend(ctx, sender.KeyName(), ibc.WalletAmount{
+		Address: address,
+		Denom:   "uusdc",
+		Amount:  math.NewInt(1_000_000),
+	}))
+
+	time.Sleep(10 * time.Minute)
+
+	require.NoError(t, rly.StartRelayer(ctx, execReporter))
+	require.NoError(t, testutil.WaitForBlocks(ctx, 10, noble, gaia))
+
+	senderBalance, err := noble.GetBalance(ctx, sender.FormattedAddress(), "uusdc")
+	require.NoError(t, err)
+	require.True(t, senderBalance.IsZero())
+
+	balance, err := noble.GetBalance(ctx, address, "uusdc")
+	require.NoError(t, err)
+	require.Equal(t, math.NewInt(1_000_000), balance)
+
+	receiverBalance, err := gaia.GetBalance(ctx, receiver.FormattedAddress(), transfertypes.DenomTrace{
+		Path:      "transfer/channel-0",
+		BaseDenom: "uusdc",
+	}.IBCDenom())
+	require.NoError(t, err)
+	require.True(t, receiverBalance.IsZero())
+
+	_, err = validator.ExecTx(ctx, sender.KeyName(), "forwarding", "clear-account", address)
+	require.NoError(t, err)
+	require.NoError(t, testutil.WaitForBlocks(ctx, 10, noble, gaia))
+
+	senderBalance, err = noble.GetBalance(ctx, sender.FormattedAddress(), "uusdc")
+	require.NoError(t, err)
+	require.True(t, senderBalance.IsZero())
+
+	balance, err = noble.GetBalance(ctx, address, "uusdc")
+	require.NoError(t, err)
+	require.True(t, balance.IsZero())
+
+	receiverBalance, err = gaia.GetBalance(ctx, receiver.FormattedAddress(), transfertypes.DenomTrace{
+		Path:      "transfer/channel-0",
+		BaseDenom: "uusdc",
+	}.IBCDenom())
+	require.NoError(t, err)
+	require.Equal(t, math.NewInt(1_000_000), receiverBalance)
+
+	stats := ForwardingStats(t, ctx, validator)
+	require.Equal(t, uint64(1), stats.NumOfAccounts)
+	require.Equal(t, uint64(2), stats.NumOfForwards)
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin("uusdc", math.NewInt(2_000_000))), stats.TotalForwarded)
+}
+
+func TestFallbackAccount(t *testing.T) {
+	t.Parallel()
+
+	ctx, noble, gaia, rly, execReporter, sender, fallback, receiver := ForwardingSuite(t)
+	validator := noble.Validators[0]
+
+	require.NoError(t, rly.StopRelayer(ctx, execReporter))
+
+	address, exists := ForwardingAccount(t, ctx, validator, receiver, fallback.FormattedAddress())
+	require.False(t, exists)
+
+	_, err := validator.ExecTx(ctx, sender.KeyName(), "forwarding", "register-account", "channel-0", receiver.FormattedAddress(), fallback.FormattedAddress())
+	require.NoError(t, err)
+
+	_, exists = ForwardingAccount(t, ctx, validator, receiver, fallback.FormattedAddress())
+	require.True(t, exists)
+
+	require.NoError(t, validator.BankSend(ctx, sender.KeyName(), ibc.WalletAmount{
+		Address: address,
+		Denom:   "uusdc",
+		Amount:  math.NewInt(1_000_000),
+	}))
+
+	time.Sleep(10 * time.Minute)
+
+	require.NoError(t, rly.StartRelayer(ctx, execReporter))
+	require.NoError(t, testutil.WaitForBlocks(ctx, 10, noble, gaia))
+
+	senderBalance, err := noble.GetBalance(ctx, sender.FormattedAddress(), "uusdc")
+	require.NoError(t, err)
+	require.True(t, senderBalance.IsZero())
+
+	fallbackBalance, err := noble.GetBalance(ctx, fallback.FormattedAddress(), "uusdc")
+	require.NoError(t, err)
+	require.True(t, fallbackBalance.IsZero())
+
+	balance, err := noble.GetBalance(ctx, address, "uusdc")
+	require.NoError(t, err)
+	require.Equal(t, math.NewInt(1_000_000), balance)
+
+	receiverBalance, err := gaia.GetBalance(ctx, receiver.FormattedAddress(), transfertypes.DenomTrace{
+		Path:      "transfer/channel-0",
+		BaseDenom: "uusdc",
+	}.IBCDenom())
+	require.NoError(t, err)
+	require.True(t, receiverBalance.IsZero())
+
+	_, err = validator.ExecTx(ctx, sender.KeyName(), "forwarding", "clear-account", address, "--fallback")
+	require.NoError(t, err)
+	require.NoError(t, testutil.WaitForBlocks(ctx, 10, noble, gaia))
+
+	senderBalance, err = noble.GetBalance(ctx, sender.FormattedAddress(), "uusdc")
+	require.NoError(t, err)
+	require.True(t, senderBalance.IsZero())
+
+	fallbackBalance, err = noble.GetBalance(ctx, fallback.FormattedAddress(), "uusdc")
+	require.NoError(t, err)
+	require.Equal(t, math.NewInt(1_000_000), fallbackBalance)
+
+	balance, err = noble.GetBalance(ctx, address, "uusdc")
+	require.NoError(t, err)
+	require.True(t, balance.IsZero())
+
+	receiverBalance, err = gaia.GetBalance(ctx, receiver.FormattedAddress(), transfertypes.DenomTrace{
+		Path:      "transfer/channel-0",
+		BaseDenom: "uusdc",
+	}.IBCDenom())
+	require.NoError(t, err)
+	require.True(t, receiverBalance.IsZero())
+
+	stats := ForwardingStats(t, ctx, validator)
+	require.Equal(t, uint64(1), stats.NumOfAccounts)
+	require.Equal(t, uint64(1), stats.NumOfForwards)
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin("uusdc", math.NewInt(1_000_000))), stats.TotalForwarded)
+}
+
 //
 
-func ForwardingAccount(t *testing.T, ctx context.Context, validator *cosmos.ChainNode, receiver ibc.Wallet) (address string, exists bool) {
-	raw, _, err := validator.ExecQuery(ctx, "forwarding", "address", "channel-0", receiver.FormattedAddress())
+func ForwardingAccount(t *testing.T, ctx context.Context, validator *cosmos.ChainNode, receiver ibc.Wallet, fallback string) (address string, exists bool) {
+	var raw []byte
+	var err error
+
+	if fallback == "" {
+		raw, _, err = validator.ExecQuery(ctx, "forwarding", "address", "channel-0", receiver.FormattedAddress())
+	} else {
+		raw, _, err = validator.ExecQuery(ctx, "forwarding", "address", "channel-0", receiver.FormattedAddress(), fallback)
+	}
+
 	require.NoError(t, err)
 
 	var res forwardingtypes.QueryAddressResponse
@@ -202,7 +354,7 @@ func TxFee(t *testing.T, ctx context.Context, validator *cosmos.ChainNode, hash 
 	return res.Tx.AuthInfo.Fee.Amount
 }
 
-func ForwardingSuite(t *testing.T) (ctx context.Context, noble *cosmos.CosmosChain, gaia *cosmos.CosmosChain, relayer *rly.CosmosRelayer, execReporter *testreporter.RelayerExecReporter, sender ibc.Wallet, receiver ibc.Wallet) {
+func ForwardingSuite(t *testing.T) (ctx context.Context, noble *cosmos.CosmosChain, gaia *cosmos.CosmosChain, relayer *rly.CosmosRelayer, execReporter *testreporter.RelayerExecReporter, sender ibc.Wallet, fallback ibc.Wallet, receiver ibc.Wallet) {
 	ctx = context.Background()
 	logger := zaptest.NewLogger(t)
 	reporter := testreporter.NewNopReporter()
@@ -282,8 +434,14 @@ func ForwardingSuite(t *testing.T) (ctx context.Context, noble *cosmos.CosmosCha
 
 	require.NoError(t, relayer.StartRelayer(ctx, execReporter))
 
-	wallets := interchaintest.GetAndFundTestUsers(t, ctx, "wallet", math.NewInt(1_000_000), noble, gaia)
-	sender, receiver = wallets[0], wallets[1]
+	wallets := interchaintest.GetAndFundTestUsers(t, ctx, "wallet", math.NewInt(1_000_000), noble, noble, noble, gaia)
+	sender, fallback, throwaway, receiver := wallets[0], wallets[1], wallets[2], wallets[3]
+
+	require.NoError(t, noble.SendFunds(ctx, fallback.KeyName(), ibc.WalletAmount{
+		Address: throwaway.FormattedAddress(),
+		Denom:   "uusdc",
+		Amount:  math.NewInt(1_000_000),
+	}))
 
 	return
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
 )
@@ -128,7 +128,7 @@ func (k *Keeper) ExecuteForwards(ctx context.Context) {
 
 // SendRestrictionFn checks every transfer executed on the Noble chain to see if
 // the recipient is a forwarding account, allowing us to mark accounts for clearing.
-func (k *Keeper) SendRestrictionFn(ctx context.Context, _, toAddr sdk.AccAddress, _ sdk.Coins) (newToAddr sdk.AccAddress, err error) {
+func (k *Keeper) SendRestrictionFn(ctx context.Context, fromAddr, toAddr sdk.AccAddress, _ sdk.Coins) (newToAddr sdk.AccAddress, err error) {
 	rawAccount := k.accountKeeper.GetAccount(ctx, toAddr)
 	if rawAccount == nil {
 		return toAddr, nil
@@ -139,7 +139,11 @@ func (k *Keeper) SendRestrictionFn(ctx context.Context, _, toAddr sdk.AccAddress
 		return toAddr, nil
 	}
 
-	k.SetPendingForward(ctx, account)
+	escrow := transfertypes.GetEscrowAddress(transfertypes.PortID, account.Channel)
+	if !fromAddr.Equals(escrow) {
+		k.SetPendingForward(ctx, account)
+	}
+
 	return toAddr, nil
 }
 
