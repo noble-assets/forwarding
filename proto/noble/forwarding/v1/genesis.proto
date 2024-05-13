@@ -5,7 +5,8 @@ package noble.forwarding.v1;
 option go_package = "github.com/noble-assets/forwarding/v2/x/forwarding/types";
 
 message GenesisState {
-  map<string, uint64> num_of_accounts = 1;
-  map<string, uint64> num_of_forwards = 2;
-  map<string, string> total_forwarded = 3;
+  repeated string allowed_denoms = 1;
+  map<string, uint64> num_of_accounts = 2;
+  map<string, uint64> num_of_forwards = 3;
+  map<string, string> total_forwarded = 4;
 }

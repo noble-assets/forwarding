@@ -53,3 +53,6 @@ modules:
   - name: forwarding
     config:
       "@type": noble.forwarding.module.v1.Module
+      # NOTE: This is a dummy account used for local testing.
+      # exchange flash debris claw calm shine laundry february cousin glad name miss jar neglect reflect blanket orbit clever educate rent inject lounge pupil plastic
+      authority: noble1h8tqx833l3t2s45mwxjz29r85dcevy93wk63za

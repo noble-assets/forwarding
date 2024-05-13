@@ -9,6 +9,17 @@ import (
 
 // PERSISTENT STATE
 
+func (k *Keeper) GetAllowedDenoms(ctx context.Context) []string {
+	var denoms []string
+
+	_ = k.AllowedDenoms.Walk(ctx, nil, func(denom string) (stop bool, err error) {
+		denoms = append(denoms, denom)
+		return false, nil
+	})
+
+	return denoms
+}
+
 func (k *Keeper) GetAllNumOfAccounts(ctx context.Context) map[string]uint64 {
 	counts := make(map[string]uint64)
 

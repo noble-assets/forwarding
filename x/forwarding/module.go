@@ -17,6 +17,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	modulev1 "github.com/noble-assets/forwarding/v2/api/noble/forwarding/module/v1"
@@ -153,11 +154,25 @@ func (AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "address"}},
 				},
+				{
+					RpcMethod: "SetAllowedDenoms",
+					Use:       "set-allowed-denoms [denoms ...]",
+					Short:     "Set the list of denoms that are allowed to be forwarded",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{
+						ProtoField: "denoms",
+						Varargs:    true,
+					}},
+				},
 			},
 		},
 		Query: &autocliv1.ServiceCommandDescriptor{
 			Service: forwardingv1.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
+				{
+					RpcMethod: "Denoms",
+					Use:       "denoms",
+					Short:     "Query denoms that are allowed to be forwarded",
+				},
 				{
 					RpcMethod: "Address",
 					Use:       "address [channel] [recipient] (fallback)",
@@ -219,12 +234,18 @@ type ModuleOutputs struct {
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
+	if in.Config.Authority == "" {
+		panic("authority for x/forwarding module must be set")
+	}
+
+	authority := authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)
 	k := keeper.NewKeeper(
 		in.Cdc,
 		in.Logger,
 		in.StoreService,
 		in.TransientService,
 		in.HeaderService,
+		authority.String(),
 		in.AccountKeeper,
 		in.BankKeeper,
 		nil,

@@ -15,6 +15,8 @@ if ! [ -f .forwarding/data/priv_validator_state.json ]; then
 
   forwardingd keys add validator --home .forwarding --keyring-backend test &> /dev/null
   forwardingd genesis add-genesis-account validator 1000000ustake --home .forwarding --keyring-backend test
+  forwardingd keys add authority --recover --home .forwarding --keyring-backend test <<< "exchange flash debris claw calm shine laundry february cousin glad name miss jar neglect reflect blanket orbit clever educate rent inject lounge pupil plastic" &> /dev/null
+  forwardingd genesis add-genesis-account authority 10000000uusdc --home .forwarding --keyring-backend test
   forwardingd keys add user --home .forwarding --keyring-backend test &> /dev/null
   forwardingd genesis add-genesis-account user 10000000uusdc --home .forwarding --keyring-backend test
 

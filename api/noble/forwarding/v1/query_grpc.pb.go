@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	Query_Denoms_FullMethodName         = "/noble.forwarding.v1.Query/Denoms"
 	Query_Address_FullMethodName        = "/noble.forwarding.v1.Query/Address"
 	Query_Stats_FullMethodName          = "/noble.forwarding.v1.Query/Stats"
 	Query_StatsByChannel_FullMethodName = "/noble.forwarding.v1.Query/StatsByChannel"
@@ -28,6 +29,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type QueryClient interface {
+	Denoms(ctx context.Context, in *QueryDenoms, opts ...grpc.CallOption) (*QueryDenomsResponse, error)
 	Address(ctx context.Context, in *QueryAddress, opts ...grpc.CallOption) (*QueryAddressResponse, error)
 	Stats(ctx context.Context, in *QueryStats, opts ...grpc.CallOption) (*QueryStatsResponse, error)
 	StatsByChannel(ctx context.Context, in *QueryStatsByChannel, opts ...grpc.CallOption) (*QueryStatsByChannelResponse, error)
@@ -39,6 +41,15 @@ type queryClient struct {
 
 func NewQueryClient(cc grpc.ClientConnInterface) QueryClient {
 	return &queryClient{cc}
+}
+
+func (c *queryClient) Denoms(ctx context.Context, in *QueryDenoms, opts ...grpc.CallOption) (*QueryDenomsResponse, error) {
+	out := new(QueryDenomsResponse)
+	err := c.cc.Invoke(ctx, Query_Denoms_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *queryClient) Address(ctx context.Context, in *QueryAddress, opts ...grpc.CallOption) (*QueryAddressResponse, error) {
@@ -72,6 +83,7 @@ func (c *queryClient) StatsByChannel(ctx context.Context, in *QueryStatsByChanne
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
 type QueryServer interface {
+	Denoms(context.Context, *QueryDenoms) (*QueryDenomsResponse, error)
 	Address(context.Context, *QueryAddress) (*QueryAddressResponse, error)
 	Stats(context.Context, *QueryStats) (*QueryStatsResponse, error)
 	StatsByChannel(context.Context, *QueryStatsByChannel) (*QueryStatsByChannelResponse, error)
@@ -82,6 +94,9 @@ type QueryServer interface {
 type UnimplementedQueryServer struct {
 }
 
+func (UnimplementedQueryServer) Denoms(context.Context, *QueryDenoms) (*QueryDenomsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Denoms not implemented")
+}
 func (UnimplementedQueryServer) Address(context.Context, *QueryAddress) (*QueryAddressResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Address not implemented")
 }
@@ -102,6 +117,24 @@ type UnsafeQueryServer interface {
 
 func RegisterQueryServer(s grpc.ServiceRegistrar, srv QueryServer) {
 	s.RegisterService(&Query_ServiceDesc, srv)
+}
+
+func _Query_Denoms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDenoms)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Denoms(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Denoms_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Denoms(ctx, req.(*QueryDenoms))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Query_Address_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -165,6 +198,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "noble.forwarding.v1.Query",
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Denoms",
+			Handler:    _Query_Denoms_Handler,
+		},
 		{
 			MethodName: "Address",
 			Handler:    _Query_Address_Handler,
