@@ -9,6 +9,10 @@ import (
 )
 
 func InitGenesis(ctx context.Context, k *keeper.Keeper, genesis types.GenesisState) {
+	for _, denom := range genesis.AllowedDenoms {
+		_ = k.AllowedDenoms.Set(ctx, denom)
+	}
+
 	for channel, count := range genesis.NumOfAccounts {
 		_ = k.NumOfAccounts.Set(ctx, channel, count)
 	}
@@ -24,6 +28,7 @@ func InitGenesis(ctx context.Context, k *keeper.Keeper, genesis types.GenesisSta
 
 func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
 	return &types.GenesisState{
+		AllowedDenoms:  k.GetAllowedDenoms(ctx),
 		NumOfAccounts:  k.GetAllNumOfAccounts(ctx),
 		NumOfForwards:  k.GetAllNumOfForwards(ctx),
 		TotalForwarded: k.GetAllTotalForwarded(ctx),

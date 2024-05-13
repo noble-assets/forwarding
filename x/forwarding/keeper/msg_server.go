@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -115,4 +116,26 @@ func (k *Keeper) ClearAccount(ctx context.Context, msg *types.MsgClearAccount) (
 	}
 
 	return &types.MsgClearAccountResponse{}, nil
+}
+
+func (k *Keeper) SetAllowedDenoms(ctx context.Context, msg *types.MsgSetAllowedDenoms) (*types.MsgSetAllowedDenomsResponse, error) {
+	if msg.Signer != k.authority {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidAuthority, "expected %s, got %s", k.authority, msg.Signer)
+	}
+
+	if err := types.ValidateAllowedDenoms(msg.Denoms); err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalidDenoms, err.Error())
+	}
+
+	for _, denom := range k.GetAllowedDenoms(ctx) {
+		_ = k.AllowedDenoms.Remove(ctx, denom)
+	}
+	for _, denom := range msg.Denoms {
+		err := k.AllowedDenoms.Set(ctx, denom)
+		if err != nil {
+			return nil, fmt.Errorf("failed to set %s as allowed denom in state", denom)
+		}
+	}
+
+	return &types.MsgSetAllowedDenomsResponse{}, nil
 }

@@ -24,7 +24,10 @@ type Keeper struct {
 	transientService store.TransientStoreService
 	headerService    header.Service
 
+	authority string
+
 	Schema         collections.Schema
+	AllowedDenoms  collections.KeySet[string]
 	NumOfAccounts  collections.Map[string, uint64]
 	NumOfForwards  collections.Map[string, uint64]
 	TotalForwarded collections.Map[string, string]
@@ -44,6 +47,7 @@ func NewKeeper(
 	storeService store.KVStoreService,
 	transientService store.TransientStoreService,
 	headerService header.Service,
+	authority string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	channelKeeper types.ChannelKeeper,
@@ -59,6 +63,9 @@ func NewKeeper(
 		transientService: transientService,
 		headerService:    headerService,
 
+		authority: authority,
+
+		AllowedDenoms:  collections.NewKeySet(builder, types.AllowedDenomsPrefix, "allowed_denoms", collections.StringKey),
 		NumOfAccounts:  collections.NewMap(builder, types.NumOfAccountsPrefix, "num_of_accounts", collections.StringKey, collections.Uint64Value),
 		NumOfForwards:  collections.NewMap(builder, types.NumOfForwardsPrefix, "num_of_forwards", collections.StringKey, collections.Uint64Value),
 		TotalForwarded: collections.NewMap(builder, types.TotalForwardedPrefix, "total_forwarded", collections.StringKey, collections.StringValue),
@@ -85,6 +92,17 @@ func NewKeeper(
 	return keeper
 }
 
+// IsAllowedDenom checks if a specific denom is allowed to be forwarded.
+func (k *Keeper) IsAllowedDenom(ctx context.Context, denom string) bool {
+	has, _ := k.AllowedDenoms.Has(ctx, "*")
+	if has {
+		return true
+	}
+
+	has, _ = k.AllowedDenoms.Has(ctx, denom)
+	return has
+}
+
 // ExecuteForwards is an end block hook that clears all pending forwards from transient state.
 func (k *Keeper) ExecuteForwards(ctx context.Context) {
 	forwards := k.GetPendingForwards(ctx)
@@ -102,6 +120,10 @@ func (k *Keeper) ExecuteForwards(ctx context.Context) {
 		balances := k.bankKeeper.GetAllBalances(ctx, forward.GetAddress())
 
 		for _, balance := range balances {
+			if !k.IsAllowedDenom(ctx, balance.Denom) {
+				continue
+			}
+
 			timeout := uint64(k.headerService.GetHeaderInfo(ctx).Time.UnixNano()) + transfertypes.DefaultRelativePacketTimeoutTimestamp
 			_, err := k.transferKeeper.Transfer(ctx, &transfertypes.MsgTransfer{
 				SourcePort:       transfertypes.PortID,

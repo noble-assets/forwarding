@@ -12,6 +12,16 @@ import (
 
 var _ types.QueryServer = &Keeper{}
 
+func (k *Keeper) Denoms(ctx context.Context, req *types.QueryDenoms) (*types.QueryDenomsResponse, error) {
+	if req == nil {
+		return nil, errorstypes.ErrInvalidRequest
+	}
+
+	allowedDenoms := k.GetAllowedDenoms(ctx)
+
+	return &types.QueryDenomsResponse{AllowedDenoms: allowedDenoms}, nil
+}
+
 func (k *Keeper) Address(ctx context.Context, req *types.QueryAddress) (*types.QueryAddressResponse, error) {
 	if req == nil {
 		return nil, errorstypes.ErrInvalidRequest

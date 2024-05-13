@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/jsonpb"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	"github.com/icza/dyno"
 	forwardingtypes "github.com/noble-assets/forwarding/v2/x/forwarding/types"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
@@ -25,7 +26,7 @@ import (
 func TestRegisterOnNoble(t *testing.T) {
 	t.Parallel()
 
-	ctx, noble, gaia, _, _, sender, _, receiver := ForwardingSuite(t)
+	ctx, noble, gaia, _, _, sender, _, receiver := ForwardingSuite(t, nil)
 	validator := noble.Validators[0]
 
 	address, exists := ForwardingAccount(t, ctx, validator, receiver, "")
@@ -68,7 +69,7 @@ func TestRegisterOnNoble(t *testing.T) {
 func TestRegisterViaTransfer(t *testing.T) {
 	t.Parallel()
 
-	ctx, noble, gaia, _, _, _, _, receiver := ForwardingSuite(t)
+	ctx, noble, gaia, _, _, _, _, receiver := ForwardingSuite(t, nil)
 	validator := noble.Validators[0]
 
 	address, exists := ForwardingAccount(t, ctx, validator, receiver, "")
@@ -113,7 +114,7 @@ func TestRegisterViaPacket(t *testing.T) {
 func TestFrontRunAccount(t *testing.T) {
 	t.Parallel()
 
-	ctx, noble, gaia, _, _, sender, _, receiver := ForwardingSuite(t)
+	ctx, noble, gaia, _, _, sender, _, receiver := ForwardingSuite(t, nil)
 	validator := noble.Validators[0]
 
 	address, exists := ForwardingAccount(t, ctx, validator, receiver, "")
@@ -160,7 +161,7 @@ func TestFrontRunAccount(t *testing.T) {
 func TestClearAccount(t *testing.T) {
 	t.Parallel()
 
-	ctx, noble, gaia, rly, execReporter, sender, _, receiver := ForwardingSuite(t)
+	ctx, noble, gaia, rly, execReporter, sender, _, receiver := ForwardingSuite(t, nil)
 	validator := noble.Validators[0]
 
 	require.NoError(t, rly.StopRelayer(ctx, execReporter))
@@ -228,7 +229,7 @@ func TestClearAccount(t *testing.T) {
 func TestFallbackAccount(t *testing.T) {
 	t.Parallel()
 
-	ctx, noble, gaia, rly, execReporter, sender, fallback, receiver := ForwardingSuite(t)
+	ctx, noble, gaia, rly, execReporter, sender, fallback, receiver := ForwardingSuite(t, nil)
 	validator := noble.Validators[0]
 
 	require.NoError(t, rly.StopRelayer(ctx, execReporter))
@@ -301,7 +302,78 @@ func TestFallbackAccount(t *testing.T) {
 	require.Equal(t, sdk.NewCoins(sdk.NewCoin("uusdc", math.NewInt(1_000_000))), stats.TotalForwarded)
 }
 
+func TestAllowedDenoms(t *testing.T) {
+	t.Parallel()
+
+	ctx, noble, gaia, _, _, sender, fallback, receiver := ForwardingSuite(t, &[]string{"uusdc"})
+	validator := noble.Validators[0]
+
+	res := ForwardingDenoms(t, ctx, validator)
+	require.Len(t, res.AllowedDenoms, 1)
+	require.Contains(t, res.AllowedDenoms, "uusdc")
+
+	address, exists := ForwardingAccount(t, ctx, validator, receiver, fallback.FormattedAddress())
+	require.False(t, exists)
+
+	_, err := gaia.SendIBCTransfer(ctx, "channel-0", receiver.KeyName(), ibc.WalletAmount{
+		Address: address,
+		Denom:   "uatom",
+		Amount:  math.NewInt(100_000),
+	}, ibc.TransferOptions{
+		Memo: fmt.Sprintf("{\"noble\":{\"forwarding\":{\"recipient\":\"%s\",\"fallback\":\"%s\"}}}", receiver.FormattedAddress(), fallback.FormattedAddress()),
+	})
+	require.NoError(t, err)
+
+	require.NoError(t, testutil.WaitForBlocks(ctx, 10, noble, gaia))
+
+	_, exists = ForwardingAccount(t, ctx, validator, receiver, fallback.FormattedAddress())
+	require.True(t, exists)
+
+	balance, err := noble.BankQueryAllBalances(ctx, address)
+	require.NoError(t, err)
+	uatom := transfertypes.DenomTrace{Path: "transfer/channel-0", BaseDenom: "uatom"}.IBCDenom()
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin(uatom, math.NewInt(100_000))), balance)
+
+	require.NoError(t, validator.BankSend(ctx, sender.KeyName(), ibc.WalletAmount{
+		Address: address,
+		Denom:   "uusdc",
+		Amount:  math.NewInt(1_000_000),
+	}))
+	require.NoError(t, testutil.WaitForBlocks(ctx, 10, noble, gaia))
+
+	balance, err = noble.BankQueryAllBalances(ctx, address)
+	require.NoError(t, err)
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin(uatom, math.NewInt(100_000))), balance)
+
+	_, err = validator.ExecTx(ctx, sender.KeyName(), "forwarding", "clear-account", address, "--fallback")
+	require.NoError(t, err)
+	require.NoError(t, testutil.WaitForBlocks(ctx, 10, noble, gaia))
+
+	balance, err = noble.BankQueryAllBalances(ctx, address)
+	require.NoError(t, err)
+	require.True(t, balance.IsZero())
+
+	fallbackBalance, err := noble.BankQueryAllBalances(ctx, fallback.FormattedAddress())
+	require.NoError(t, err)
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin(uatom, math.NewInt(100_000))), fallbackBalance)
+
+	stats := ForwardingStats(t, ctx, validator)
+	require.Equal(t, uint64(1), stats.NumOfAccounts)
+	require.Equal(t, uint64(1), stats.NumOfForwards)
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin("uusdc", math.NewInt(1_000_000))), stats.TotalForwarded)
+}
+
 //
+
+func ForwardingDenoms(t *testing.T, ctx context.Context, validator *cosmos.ChainNode) forwardingtypes.QueryDenomsResponse {
+	raw, _, err := validator.ExecQuery(ctx, "forwarding", "denoms")
+	require.NoError(t, err)
+
+	var res forwardingtypes.QueryDenomsResponse
+	require.NoError(t, json.Unmarshal(raw, &res))
+
+	return res
+}
 
 func ForwardingAccount(t *testing.T, ctx context.Context, validator *cosmos.ChainNode, receiver ibc.Wallet, fallback string) (address string, exists bool) {
 	var raw []byte
@@ -354,7 +426,7 @@ func TxFee(t *testing.T, ctx context.Context, validator *cosmos.ChainNode, hash 
 	return res.Tx.AuthInfo.Fee.Amount
 }
 
-func ForwardingSuite(t *testing.T) (ctx context.Context, noble *cosmos.CosmosChain, gaia *cosmos.CosmosChain, relayer *rly.CosmosRelayer, execReporter *testreporter.RelayerExecReporter, sender ibc.Wallet, fallback ibc.Wallet, receiver ibc.Wallet) {
+func ForwardingSuite(t *testing.T, denoms *[]string) (ctx context.Context, noble *cosmos.CosmosChain, gaia *cosmos.CosmosChain, relayer *rly.CosmosRelayer, execReporter *testreporter.RelayerExecReporter, sender ibc.Wallet, fallback ibc.Wallet, receiver ibc.Wallet) {
 	ctx = context.Background()
 	logger := zaptest.NewLogger(t)
 	reporter := testreporter.NewNopReporter()
@@ -387,6 +459,27 @@ func ForwardingSuite(t *testing.T) (ctx context.Context, noble *cosmos.CosmosCha
 				GasAdjustment:  5,
 				TrustingPeriod: "504h",
 				NoHostMount:    false,
+				ModifyGenesis: func(cfg ibc.ChainConfig, bz []byte) ([]byte, error) {
+					if denoms == nil {
+						return bz, nil
+					}
+
+					gen := make(map[string]interface{})
+					if err := json.Unmarshal(bz, &gen); err != nil {
+						return nil, fmt.Errorf("failed to unmarshal genesis: %w", err)
+					}
+
+					if err := dyno.Set(gen, denoms, "app_state", "forwarding", "allowed_denoms"); err != nil {
+						return nil, fmt.Errorf("failed to set forwarding allowed denoms in genesis: %w", err)
+					}
+
+					bz, err := json.Marshal(&gen)
+					if err != nil {
+						return nil, fmt.Errorf("failed to marshal genesis: %w", err)
+					}
+
+					return bz, nil
+				},
 			},
 		},
 		{

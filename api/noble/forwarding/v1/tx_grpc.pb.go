@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_RegisterAccount_FullMethodName = "/noble.forwarding.v1.Msg/RegisterAccount"
-	Msg_ClearAccount_FullMethodName    = "/noble.forwarding.v1.Msg/ClearAccount"
+	Msg_RegisterAccount_FullMethodName  = "/noble.forwarding.v1.Msg/RegisterAccount"
+	Msg_ClearAccount_FullMethodName     = "/noble.forwarding.v1.Msg/ClearAccount"
+	Msg_SetAllowedDenoms_FullMethodName = "/noble.forwarding.v1.Msg/SetAllowedDenoms"
 )
 
 // MsgClient is the client API for Msg service.
@@ -29,6 +30,7 @@ const (
 type MsgClient interface {
 	RegisterAccount(ctx context.Context, in *MsgRegisterAccount, opts ...grpc.CallOption) (*MsgRegisterAccountResponse, error)
 	ClearAccount(ctx context.Context, in *MsgClearAccount, opts ...grpc.CallOption) (*MsgClearAccountResponse, error)
+	SetAllowedDenoms(ctx context.Context, in *MsgSetAllowedDenoms, opts ...grpc.CallOption) (*MsgSetAllowedDenomsResponse, error)
 }
 
 type msgClient struct {
@@ -57,12 +59,22 @@ func (c *msgClient) ClearAccount(ctx context.Context, in *MsgClearAccount, opts 
 	return out, nil
 }
 
+func (c *msgClient) SetAllowedDenoms(ctx context.Context, in *MsgSetAllowedDenoms, opts ...grpc.CallOption) (*MsgSetAllowedDenomsResponse, error) {
+	out := new(MsgSetAllowedDenomsResponse)
+	err := c.cc.Invoke(ctx, Msg_SetAllowedDenoms_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
 	RegisterAccount(context.Context, *MsgRegisterAccount) (*MsgRegisterAccountResponse, error)
 	ClearAccount(context.Context, *MsgClearAccount) (*MsgClearAccountResponse, error)
+	SetAllowedDenoms(context.Context, *MsgSetAllowedDenoms) (*MsgSetAllowedDenomsResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -75,6 +87,9 @@ func (UnimplementedMsgServer) RegisterAccount(context.Context, *MsgRegisterAccou
 }
 func (UnimplementedMsgServer) ClearAccount(context.Context, *MsgClearAccount) (*MsgClearAccountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClearAccount not implemented")
+}
+func (UnimplementedMsgServer) SetAllowedDenoms(context.Context, *MsgSetAllowedDenoms) (*MsgSetAllowedDenomsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetAllowedDenoms not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -125,6 +140,24 @@ func _Msg_ClearAccount_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_SetAllowedDenoms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgSetAllowedDenoms)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).SetAllowedDenoms(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_SetAllowedDenoms_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).SetAllowedDenoms(ctx, req.(*MsgSetAllowedDenoms))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -139,6 +172,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ClearAccount",
 			Handler:    _Msg_ClearAccount_Handler,
+		},
+		{
+			MethodName: "SetAllowedDenoms",
+			Handler:    _Msg_SetAllowedDenoms_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

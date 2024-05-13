@@ -1,0 +1,1 @@
+- Allow fine-tuned control over which denoms are forwarded. ([#13](https://github.com/noble-assets/forwarding/pull/13))

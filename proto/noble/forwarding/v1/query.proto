@@ -12,6 +12,11 @@ import "google/api/annotations.proto";
 option go_package = "github.com/noble-assets/forwarding/v2/x/forwarding/types";
 
 service Query {
+  rpc Denoms(QueryDenoms) returns (QueryDenomsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/noble/forwarding/v1/denoms";
+  }
+
   rpc Address(QueryAddress) returns (QueryAddressResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/noble/forwarding/v1/address/{channel}/{recipient}/{fallback}";
@@ -29,6 +34,12 @@ service Query {
 }
 
 //
+
+message QueryDenoms {}
+
+message QueryDenomsResponse {
+  repeated string allowed_denoms = 1 [(amino.dont_omitempty) = true];
+}
 
 message QueryAddress {
   option (gogoproto.equal) = false;
