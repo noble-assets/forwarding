@@ -45,6 +45,9 @@ func (gen *GenesisState) Validate() error {
 	return nil
 }
 
+// ValidateAllowedDenoms checks if a specified denom list is valid.
+// It ensures that if a wildcard "*" is present, it must be the only item.
+// It also ensures non-empty entries.
 func ValidateAllowedDenoms(denoms []string) error {
 	if slices.Contains(denoms, "*") && len(denoms) > 1 {
 		return errors.New("wildcard can only be present by itself")
