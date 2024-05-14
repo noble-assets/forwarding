@@ -20,6 +20,13 @@ func NewMigrator(keeper *Keeper) Migrator {
 func (m Migrator) Migrate1to2(ctx sdk.Context) error {
 	adapter := runtime.KVStoreAdapter(m.keeper.storeService.OpenKVStore(ctx))
 
+	// AllowedDenoms were introduced in v2, so we initialize with a wildcard.
+	err := m.keeper.AllowedDenoms.Set(ctx, "*")
+	if err != nil {
+		return err
+	}
+
+	// Migrate NumOfAccounts from v1 to v2 state.
 	for channel, count := range v1.GetAllNumOfAccounts(adapter) {
 		err := m.keeper.NumOfAccounts.Set(ctx, channel, count)
 		if err != nil {
@@ -27,6 +34,7 @@ func (m Migrator) Migrate1to2(ctx sdk.Context) error {
 		}
 	}
 
+	// Migrate NumOfForwards from v1 to v2 state.
 	for channel, count := range v1.GetAllNumOfForwards(adapter) {
 		err := m.keeper.NumOfForwards.Set(ctx, channel, count)
 		if err != nil {
