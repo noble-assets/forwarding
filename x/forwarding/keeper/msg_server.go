@@ -109,7 +109,10 @@ func (k *Keeper) ClearAccount(ctx context.Context, msg *types.MsgClearAccount) (
 		return &types.MsgClearAccountResponse{}, nil
 	}
 
-	fallback, _ := k.accountKeeper.AddressCodec().StringToBytes(account.Fallback)
+	fallback, err := k.accountKeeper.AddressCodec().StringToBytes(account.Fallback)
+	if err != nil {
+		return nil, sdkerrors.Wrap(err, "failed to decode fallback address")
+	}
 	err = k.bankKeeper.SendCoins(ctx, address, fallback, balance)
 	if err != nil {
 		return nil, errors.New("failed to clear balance to fallback account")
@@ -127,8 +130,8 @@ func (k *Keeper) SetAllowedDenoms(ctx context.Context, msg *types.MsgSetAllowedD
 		return nil, sdkerrors.Wrap(types.ErrInvalidDenoms, err.Error())
 	}
 
-	for _, denom := range k.GetAllowedDenoms(ctx) {
-		_ = k.AllowedDenoms.Remove(ctx, denom)
+	if err := k.AllowedDenoms.Clear(ctx, nil); err != nil {
+		return nil, errors.New("failed to clear allowed denoms from state")
 	}
 	for _, denom := range msg.Denoms {
 		err := k.AllowedDenoms.Set(ctx, denom)
