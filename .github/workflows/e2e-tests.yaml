@@ -15,8 +15,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Build Docker image
-        uses: strangelove-ventures/heighliner-build-action@v1.0.1
+      - name: Build Docker Image
+        uses: strangelove-ventures/heighliner-build-action@v1.0.2
         with:
           registry: "" # empty registry, image only shared for e2e testing
           tag: local # emulate local environment for consistency in interchaintest cases
@@ -49,7 +49,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: '>=1.22'
 
       - name: Generate Matrix
         id: set-matrix
@@ -57,7 +57,7 @@ jobs:
           # Run the command and convert its output to a JSON array
           TESTS=$(cd e2e && go test -list . | grep -v "^ok " | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=${TESTS}" >> $GITHUB_OUTPUT
-  
+
   test:
     needs:
       - build
@@ -76,7 +76,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: '>=1.22'
 
       - name: Download Tarball Artifact
         uses: actions/download-artifact@v4
@@ -86,5 +86,5 @@ jobs:
       - name: Load Docker Image
         run: docker image load -i ${{ env.TAR_PATH }}
 
-      - name: run test
+      - name: Run Tests
         run: cd e2e && go test -race -v -timeout 15m -run ^${{ matrix.test }}$ .

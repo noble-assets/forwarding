@@ -66,7 +66,12 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 			}
 		}
 
-		return &types.MsgRegisterAccountResponse{Address: address.String()}, nil
+		return &types.MsgRegisterAccountResponse{Address: address.String()}, k.eventService.EventManager(ctx).Emit(ctx, &types.AccountRegistered{
+			Address:   address.String(),
+			Channel:   msg.Channel,
+			Recipient: msg.Recipient,
+			Fallback:  msg.Fallback,
+		})
 	}
 
 	base := k.accountKeeper.NewAccountWithAddress(ctx, address)
@@ -81,7 +86,12 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 	k.accountKeeper.SetAccount(ctx, &account)
 	k.IncrementNumOfAccounts(ctx, msg.Channel)
 
-	return &types.MsgRegisterAccountResponse{Address: address.String()}, nil
+	return &types.MsgRegisterAccountResponse{Address: address.String()}, k.eventService.EventManager(ctx).Emit(ctx, &types.AccountRegistered{
+		Address:   address.String(),
+		Channel:   account.Channel,
+		Recipient: account.Recipient,
+		Fallback:  account.Fallback,
+	})
 }
 
 func (k *Keeper) ClearAccount(ctx context.Context, msg *types.MsgClearAccount) (*types.MsgClearAccountResponse, error) {
@@ -118,7 +128,10 @@ func (k *Keeper) ClearAccount(ctx context.Context, msg *types.MsgClearAccount) (
 		return nil, errors.New("failed to clear balance to fallback account")
 	}
 
-	return &types.MsgClearAccountResponse{}, nil
+	return &types.MsgClearAccountResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &types.AccountCleared{
+		Address:   msg.Address,
+		Recipient: account.Fallback,
+	})
 }
 
 func (k *Keeper) SetAllowedDenoms(ctx context.Context, msg *types.MsgSetAllowedDenoms) (*types.MsgSetAllowedDenomsResponse, error) {
@@ -130,6 +143,7 @@ func (k *Keeper) SetAllowedDenoms(ctx context.Context, msg *types.MsgSetAllowedD
 		return nil, sdkerrors.Wrap(types.ErrInvalidDenoms, err.Error())
 	}
 
+	previousDenoms := k.GetAllowedDenoms(ctx)
 	if err := k.AllowedDenoms.Clear(ctx, nil); err != nil {
 		return nil, errors.New("failed to clear allowed denoms from state")
 	}
@@ -140,5 +154,8 @@ func (k *Keeper) SetAllowedDenoms(ctx context.Context, msg *types.MsgSetAllowedD
 		}
 	}
 
-	return &types.MsgSetAllowedDenomsResponse{}, nil
+	return &types.MsgSetAllowedDenomsResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &types.AllowedDenomsConfigured{
+		PreviousDenoms: previousDenoms,
+		CurrentDenoms:  msg.Denoms,
+	})
 }

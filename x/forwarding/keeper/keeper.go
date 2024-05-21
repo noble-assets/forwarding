@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
+	"cosmossdk.io/core/event"
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
@@ -23,6 +24,7 @@ type Keeper struct {
 	storeService     store.KVStoreService
 	transientService store.TransientStoreService
 	headerService    header.Service
+	eventService     event.Service
 
 	authority string
 
@@ -47,6 +49,7 @@ func NewKeeper(
 	storeService store.KVStoreService,
 	transientService store.TransientStoreService,
 	headerService header.Service,
+	eventService event.Service,
 	authority string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
@@ -62,6 +65,7 @@ func NewKeeper(
 		storeService:     storeService,
 		transientService: transientService,
 		headerService:    headerService,
+		eventService:     eventService,
 
 		authority: authority,
 
