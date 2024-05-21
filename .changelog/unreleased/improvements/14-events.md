@@ -1,0 +1,1 @@
+- Emit events for key module actions (registering, clearing, etc). ([#13](https://github.com/noble-assets/forwarding/pull/13))
