@@ -3,6 +3,7 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -26,6 +27,8 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*authtypes.AccountI)(nil), &ForwardingAccount{})
 	registry.RegisterImplementations((*authtypes.GenesisAccount)(nil), &ForwardingAccount{})
+
+	registry.RegisterImplementations((*cryptotypes.PubKey)(nil), &ForwardingPubKey{})
 
 	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgRegisterAccount{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgClearAccount{})
