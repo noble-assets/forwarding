@@ -47,8 +47,8 @@ nobled query forwarding stats channel-0
 Registers a new forwarding account with the specified recipient address, IBC channel, and fallback address.
 
 ```Go
-noble forwarding tx register-account [recipient] [channel] [fallback] --from [signer]
-noble forwarding tx register-account cosmos1... channel-0 cosmos1... --from mywallet
+nobled tx forwarding register-account [recipient] [channel] [fallback] --from [signer]
+nobled tx forwarding register-account cosmos1... channel-0 noble1... --from mywallet
 ```
 
 #### Clear Forwarding Account
