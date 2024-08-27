@@ -65,6 +65,6 @@ nobled tx forwarding clear-account noble1... true --from mywallet
 Sets the list of allowed denominations for forwarding within the module.
 
 ```bash
-noble forwarding tx set-allowed-denoms [denoms] --from [signer]
-noble forwarding tx set-allowed-denoms uatom uusdc --from cosmos1...
+nobled tx forwarding set-allowed-denoms [denoms] --from [authority]
+nobled tx forwarding set-allowed-denoms uatom uusdc --from noble1...
 ```
