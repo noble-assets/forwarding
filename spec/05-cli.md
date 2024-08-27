@@ -56,8 +56,8 @@ nobled tx forwarding register-account cosmos1... channel-0 noble1... --from mywa
 Clears a forwarding account, sending any remaining packets to the fallback address.
 
 ```Go
-noble forwarding tx clear-account [address] [fallback] --from [signer]
-noble forwarding tx clear-account cosmos1... true --from mywallet
+nobled tx forwarding clear-account [address] [fallback] --from [signer]
+nobled tx forwarding clear-account noble1... true --from mywallet
 ```
 
 #### Set Allowed Denoms
