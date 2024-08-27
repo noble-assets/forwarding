@@ -14,10 +14,10 @@ The `x/forwarding` module emits events for actions such as registration or clear
 {
   "type": "noble/forwarding/v1/AccountRegistered",
   "attributes": {
-    "address": "cosmos1...",
+    "address": "noble1...",
     "channel": "channel-0",
     "recipient": "cosmos1...",
-    "fallback": "cosmos1..."
+    "fallback": "noble1..."
   }
 }
 ```
@@ -43,8 +43,8 @@ The `x/forwarding` module emits events for actions such as registration or clear
 {
   "type": "noble/forwarding/v1/AccountCleared",
   "attributes": {
-    "address": "cosmos1...",
-    "recipient": "cosmos1..."
+    "address": "noble1...",
+    "recipient": "noble1..."
   }
 }
 ```
@@ -68,8 +68,8 @@ The `x/forwarding` module emits events for actions such as registration or clear
 {
   "type": "noble/forwarding/v1/AllowedDenomsConfigured",
   "attributes": {
-    "previous_denoms": ["uatom", "uusdc"],
-    "current_denoms": ["uatom", "uusdc", "uiris"]
+    "previous_denoms": ["ausdy", "uusdc"],
+    "current_denoms": ["ausdy", "uusdc", "ueure"]
   }
 }
 ```

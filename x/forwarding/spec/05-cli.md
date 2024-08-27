@@ -6,12 +6,12 @@ The CLI commands for the `x/forwarding` module allow users to query information 
 
 ### Query Commands
 
-#### Query Denoms
+#### Query Allowed Denoms
 
 Queries the list of allowed denominations.
 
 ```Go
-noble forwarding query denoms
+nobled query forwarding denoms
 ```
 
 #### Query Forwarding Address
@@ -19,8 +19,8 @@ noble forwarding query denoms
 Queries the address of a forwarding account based on the specified IBC channel, recipient, and fallback address.
 
 ```Go
-noble forwarding query address [channel] [recipient] [fallback]
-noble forwarding query address channel-0 cosmos1... cosmos1...
+nobled query forwarding address [channel] [recipient] [fallback]
+nobled query forwarding address channel-0 cosmos1... noble1...
 ```
 
 #### Query Forwarding Stats

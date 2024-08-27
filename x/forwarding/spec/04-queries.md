@@ -24,7 +24,7 @@ The `x/forwarding` module provides several gRPC and REST query endpoints to retr
   "type": "noble/forwarding/v1/QueryDenomsResponse",
   "value": {
     "allowed_denoms": [
-      "uatom",
+      "ausdy",
       "uusdc"
     ]
   }
@@ -47,7 +47,7 @@ The `x/forwarding` module provides several gRPC and REST query endpoints to retr
   "value": {
     "channel": "channel-0",
     "recipient": "cosmos1...",
-    "fallback": "cosmos1..."
+    "fallback": "noble1..."
   }
 }
 ```
@@ -58,7 +58,7 @@ The `x/forwarding` module provides several gRPC and REST query endpoints to retr
 {
   "type": "noble/forwarding/v1/QueryAddressResponse",
   "value": {
-    "address": "cosmos1...",
+    "address": "noble1...",
     "exists": true
   }
 }
@@ -66,7 +66,7 @@ The `x/forwarding` module provides several gRPC and REST query endpoints to retr
 
 #### Fields
 
-- **channel**: the IBC channel through which packets are forwarded
+- **channel**: the IBC channel through which tokens are forwarded
 - **recipient**: the recipient address
 - **fallback**: the fallback address to use if forwarding to the primary recipient fails
 - **address**: the forwarding account's address
@@ -95,7 +95,7 @@ The `x/forwarding` module provides several gRPC and REST query endpoints to retr
       "channel-0": {
         "num_of_accounts": "1",
         "num_of_forwards": "1",
-        "total_forwarded": "1000000uatom"
+        "total_forwarded": "1000000ausdy"
       },
       "channel-1": {
         "num_of_accounts": "1",
@@ -136,7 +136,7 @@ The `x/forwarding` module provides several gRPC and REST query endpoints to retr
     "num_of_forwards": "100",
     "total_forwarded": [
       {
-        "denom": "uatom",
+        "denom": "ausdy",
         "amount": "1000000"
       }
     ]
@@ -148,5 +148,5 @@ The `x/forwarding` module provides several gRPC and REST query endpoints to retr
 
 - **channel**: the IBC channel for which statistics are being retrieved
 - **num_of_accounts**: the number of registered accounts on the channel
-- **num_of_forwards**: the number of forwarded packets on the channel
+- **num_of_forwards**: the number of forwarded tokens on the channel
 - **total_forwarded**: the total amount of assets forwarded on the channel, delineated by denomination

@@ -30,7 +30,7 @@ The `ForwardingAccount` structure stores the data needed for forwarding. This in
 - **BaseAccount**: inherits from `cosmos.auth.v1beta1.BaseAccount`
 - **channel**: specifies the IBC channel through which tokens are forwarded
 - **recipient**: the address that receives the forwarded tokens
-- **created_at**: timestamp at creation
+- **created_at**: block height at creation
 - **fallback**: a fallback address to be used if forwarding to the primary recipient fails
 
 #### State Update
@@ -41,14 +41,14 @@ The state is updated by the following messages:
 
 ### Genesis State
 
-The genesis state of the `x/forwarding` module sets up the initial configuration, including which denominations are allowed for forwarding and the initial statistics related to registered accounts and forwarding transactions.
+The genesis state of the `x/forwarding` module sets up the initial configuration, including which denominations are allowed for forwarding and the initial statistics related to registered accounts and forwarding actions.
 
 #### Structure
 
 ```Go
 {
   "allowed_denoms": [
-    "uatom",
+    "ausdy",
     "uusdc"
   ],
   "num_of_accounts": {
@@ -60,7 +60,7 @@ The genesis state of the `x/forwarding` module sets up the initial configuration
     "channel-1": "1"
   },
   "total_forwarded": {
-    "channel-0": "1000000uatom",
+    "channel-0": "1000000ausdy",
     "channel-1": "500000uusdc"
   }
 }
@@ -70,8 +70,8 @@ The genesis state of the `x/forwarding` module sets up the initial configuration
 
 - **allowed_denoms**: a list of denominations that are allowed to be forwarded
 - **num_of_accounts**: a map linking channel IDs to the number of registered forwarding accounts
-- **num_of_forwards**: a map linking channel IDs to the number of forwarding transactions
-- **total_forwarded**: a map linking channel IDs to the total amount (of denom) forwarded through the channel
+- **num_of_forwards**: a map linking channel IDs to the number of forwarding actions
+- **total_forwarded**: a map linking channel IDs to the total amount (per denom) forwarded through the channel
 
 ### State Update
 
