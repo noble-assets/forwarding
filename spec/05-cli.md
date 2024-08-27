@@ -28,7 +28,7 @@ noble forwarding query address channel-0 cosmos1... cosmos1...
 Queries general forwarding statistics across all channels.
 
 ```Go
-noble forwarding query stats
+nobled query forwarding stats
 ```
 
 #### Query Forwarding Stats by Channel
