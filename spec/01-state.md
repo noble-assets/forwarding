@@ -21,7 +21,7 @@ The `ForwardingAccount` structure stores the data needed for forwarding. This in
   "channel": "channel-0",
   "recipient": "cosmos1...",
   "created_at": "1620000000",
-  "fallback": "cosmos1..."
+  "fallback": "noble1..."
 }
 ```
 
