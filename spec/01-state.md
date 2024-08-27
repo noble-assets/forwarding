@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `x/forwarding` module maintains state related to forwarding accounts, which are specialized accounts used to route IBC packets through predefined channels. The state contains account details, channel information, and statistics related to forwarding operations.
+The `x/forwarding` module maintains state related to forwarding accounts, which are specialized accounts used to automatically route tokens from Noble through predefined channels. The state contains account details, channel information, and statistics related to forwarding operations.
 
 ### ForwardingAccount
 
