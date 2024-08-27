@@ -13,7 +13,7 @@ The `ForwardingAccount` structure stores the data needed for forwarding. This in
 ```Go
 {
   "BaseAccount": {
-    "address": "cosmos1...",
+    "address": "noble1...",
     "pub_key": null,
     "account_number": "0",
     "sequence": "0"
