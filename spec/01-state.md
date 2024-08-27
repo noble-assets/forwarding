@@ -28,7 +28,7 @@ The `ForwardingAccount` structure stores the data needed for forwarding. This in
 #### Fields
 
 - **BaseAccount**: inherits from `cosmos.auth.v1beta1.BaseAccount`
-- **channel**: specifies the IBC channel through which packets are forwarded
+- **channel**: specifies the IBC channel through which tokens are forwarded
 - **recipient**: the address that receives the forwarded packets
 - **created_at**: timestamp at creation
 - **fallback**: a fallback address to be used if forwarding to the primary recipient fails
