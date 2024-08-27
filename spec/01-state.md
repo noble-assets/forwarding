@@ -41,7 +41,7 @@ The state is updated by the following messages:
 
 ### Genesis State
 
-The genesis state of the `x/forwarding` module sets up the initial configuration, including which denominations are allowed for forwarding and the initial statistics related to registered accounts and forwarding transactions.
+The genesis state of the `x/forwarding` module sets up the initial configuration, including which denominations are allowed for forwarding and the initial statistics related to registered accounts and forwarding actions.
 
 #### Structure
 
