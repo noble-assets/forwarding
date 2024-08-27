@@ -36,8 +36,8 @@ nobled query forwarding stats
 Queries general forwarding statistics for a specific IBC channel.
 
 ```Go
-noble forwarding query stats-by-channel [channel]
-noble forwarding query stats-by-channel channel-0
+nobled query forwarding stats [channel]
+nobled query forwarding stats channel-0
 ```
 
 ### Transaction Commands
