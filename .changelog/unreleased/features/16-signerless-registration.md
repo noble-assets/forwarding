@@ -1,0 +1,1 @@
+- Allow accounts with a balance to be registered signerlessly. ([#16](https://github.com/noble-assets/forwarding/pull/16))
