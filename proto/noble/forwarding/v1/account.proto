@@ -18,3 +18,9 @@ message ForwardingAccount {
   int64 created_at = 4;
   string fallback = 5;
 }
+
+message ForwardingPubKey {
+  option (gogoproto.goproto_stringer) = false;
+
+  bytes key = 1;
+}

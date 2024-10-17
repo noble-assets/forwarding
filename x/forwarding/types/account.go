@@ -1,8 +1,10 @@
 package types
 
 import (
+	"bytes"
 	"fmt"
 
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -30,3 +32,29 @@ func (fa *ForwardingAccount) Validate() error {
 
 	return fa.BaseAccount.Validate()
 }
+
+//
+
+var _ cryptotypes.PubKey = &ForwardingPubKey{}
+
+func (fpk *ForwardingPubKey) String() string {
+	return fmt.Sprintf("PubKeyForwarding{%X}", fpk.Key)
+}
+
+func (fpk *ForwardingPubKey) Address() cryptotypes.Address { return fpk.Key }
+
+func (fpk *ForwardingPubKey) Bytes() []byte { return fpk.Key }
+
+func (*ForwardingPubKey) VerifySignature(_ []byte, _ []byte) bool {
+	panic("PubKeyForwarding.VerifySignature should never be invoked")
+}
+
+func (fpk *ForwardingPubKey) Equals(other cryptotypes.PubKey) bool {
+	if _, ok := other.(*ForwardingPubKey); !ok {
+		return false
+	}
+
+	return bytes.Equal(fpk.Bytes(), other.Bytes())
+}
+
+func (*ForwardingPubKey) Type() string { return "forwarding" }
