@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v1.2.0
+
+*Oct 22, 2024*
+
+This is a minor, consensus breaking, release to the `v1` line.
+
+### FEATURES
+
+- Allow accounts with a balance to be registered signerlessly. ([#16](https://github.com/noble-assets/forwarding/pull/16))
+
 ## v1.1.0
 
 *Apr 29, 2024*
