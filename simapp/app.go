@@ -10,8 +10,6 @@ import (
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
-	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
-
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -20,30 +18,33 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+
+	_ "cosmossdk.io/x/upgrade"
+	_ "github.com/cosmos/cosmos-sdk/x/auth"
+	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
+	_ "github.com/cosmos/cosmos-sdk/x/bank"
+	_ "github.com/cosmos/cosmos-sdk/x/consensus"
+	_ "github.com/cosmos/cosmos-sdk/x/params"
+	_ "github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/noble-assets/forwarding/v2/x/forwarding"
+
+	// Cosmos Modules
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
-	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	// IBC Modules
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	// Custom Modules
 	forwardingkeeper "github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
-
-	_ "cosmossdk.io/api/cosmos/tx/config/v1"               // import for side-effects
-	_ "cosmossdk.io/x/upgrade"                             // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/auth"                // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"      // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/bank"                // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/consensus"           // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/distribution"        // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/params"              // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/staking"             // import for side-effects
-	_ "github.com/noble-assets/forwarding/v2/x/forwarding" // import for side-effects
 )
 
 var DefaultNodeHome string
@@ -66,20 +67,17 @@ type SimApp struct {
 	txConfig          client.TxConfig
 	interfaceRegistry codectypes.InterfaceRegistry
 
-	// Cosmos SDK Modules
-	AccountKeeper         authkeeper.AccountKeeper
-	BankKeeper            bankkeeper.Keeper
-	ConsensusParamsKeeper consensuskeeper.Keeper
-	DistributionKeeper    distributionkeeper.Keeper
-	ParamsKeeper          paramskeeper.Keeper
-	StakingKeeper         *stakingkeeper.Keeper
-	UpgradeKeeper         *upgradekeeper.Keeper
+	// Cosmos Modules
+	AccountKeeper   authkeeper.AccountKeeper
+	BankKeeper      bankkeeper.Keeper
+	ConsensusKeeper consensuskeeper.Keeper
+	ParamsKeeper    paramskeeper.Keeper
+	StakingKeeper   *stakingkeeper.Keeper
+	UpgradeKeeper   *upgradekeeper.Keeper
 	// IBC Modules
-	CapabilityKeeper     *capabilitykeeper.Keeper
-	IBCKeeper            *ibckeeper.Keeper
-	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
-	TransferKeeper       transferkeeper.Keeper
-	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
+	CapabilityKeeper *capabilitykeeper.Keeper
+	IBCKeeper        *ibckeeper.Keeper
+	TransferKeeper   transferkeeper.Keeper
 	// Custom Modules
 	ForwardingKeeper *forwardingkeeper.Keeper
 }
@@ -133,11 +131,10 @@ func NewSimApp(
 		&app.legacyAmino,
 		&app.txConfig,
 		&app.interfaceRegistry,
-		// Cosmos SDK Modules
+		// Cosmos Modules
 		&app.AccountKeeper,
 		&app.BankKeeper,
-		&app.ConsensusParamsKeeper,
-		&app.DistributionKeeper,
+		&app.ConsensusKeeper,
 		&app.ParamsKeeper,
 		&app.StakingKeeper,
 		&app.UpgradeKeeper,
@@ -149,9 +146,22 @@ func NewSimApp(
 
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
 
-	if err := app.RegisterIBCModules(); err != nil {
-		panic(err)
+	if err := app.RegisterLegacyModules(); err != nil {
+		return nil, err
 	}
+
+	anteHandler, err := NewAnteHandler(HandlerOptions{
+		HandlerOptions: ante.HandlerOptions{
+			AccountKeeper:   app.AccountKeeper,
+			SignModeHandler: app.txConfig.SignModeHandler(),
+			SigGasConsumer:  forwarding.SigVerificationGasConsumer,
+		},
+		BankKeeper: app.BankKeeper,
+	})
+	if err != nil {
+		return nil, err
+	}
+	app.SetAnteHandler(anteHandler)
 
 	if err := app.RegisterStreamingServices(appOpts, app.kvStoreKeys()); err != nil {
 		return nil, err
@@ -171,6 +181,8 @@ func (app *SimApp) LegacyAmino() *codec.LegacyAmino {
 func (app *SimApp) SimulationManager() *module.SimulationManager {
 	return nil
 }
+
+//
 
 func (app *SimApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	key, _ := app.UnsafeFindStoreKey(storeKey).(*storetypes.KVStoreKey)

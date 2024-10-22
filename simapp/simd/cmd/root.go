@@ -28,9 +28,8 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	soloclient "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
-	tmclient "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-	"github.com/noble-assets/forwarding/simapp"
+	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	"github.com/noble-assets/forwarding/v2/simapp"
 	"github.com/spf13/cobra"
 )
 
@@ -112,8 +111,7 @@ func NewRootCmd() *cobra.Command {
 		capabilitytypes.ModuleName: capability.AppModule{},
 		ibcexported.ModuleName:     ibc.AppModule{},
 		transfertypes.ModuleName:   transfer.AppModule{},
-		tmclient.ModuleName:        tmclient.AppModule{},
-		soloclient.ModuleName:      soloclient.AppModule{},
+		tendermint.ModuleName:      tendermint.AppModule{},
 	}
 	for name, mod := range modules {
 		moduleBasicManager[name] = module.CoreAppModuleBasicAdaptor(name, mod)

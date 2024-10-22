@@ -31,8 +31,8 @@ lint:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-BUF_VERSION=1.31.0
-BUILDER_VERSION=0.14.0
+BUF_VERSION=1.42
+BUILDER_VERSION=0.15.1
 
 proto-all: proto-format proto-lint proto-gen
 
@@ -60,7 +60,7 @@ proto-lint:
 
 local-image:
 	@echo "🤖 Building image..."
-	@heighliner build --chain noble-forwarding-simd --local 1> /dev/null
+	@heighliner build --chain noble-forwarding-simd --file ./chains.yaml --local 1> /dev/null
 	@echo "✅ Completed build!"
 
 test: test-e2e

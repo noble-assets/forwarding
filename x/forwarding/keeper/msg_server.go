@@ -38,7 +38,9 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 	if k.accountKeeper.HasAccount(ctx, address) {
 		rawAccount := k.accountKeeper.GetAccount(ctx, address)
 		if rawAccount.GetPubKey() != nil || rawAccount.GetSequence() != 0 {
-			return nil, fmt.Errorf("attempting to register an existing user account with address: %s", address.String())
+			if !rawAccount.GetPubKey().Equals(&types.ForwardingPubKey{Key: address}) {
+				return nil, fmt.Errorf("attempting to register an existing user account with address: %s", address.String())
+			}
 		}
 
 		switch account := rawAccount.(type) {
