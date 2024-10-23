@@ -2,8 +2,6 @@ package simapp
 
 import (
 	storetypes "cosmossdk.io/store/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
@@ -16,12 +14,11 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	soloclient "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
-	tmclient "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	"github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"github.com/noble-assets/forwarding/v2/x/forwarding"
 )
 
-func (app *SimApp) RegisterIBCModules() error {
+func (app *SimApp) RegisterLegacyModules() error {
 	if err := app.RegisterStores(
 		storetypes.NewKVStoreKey(capabilitytypes.StoreKey),
 		storetypes.NewMemoryStoreKey(capabilitytypes.MemStoreKey),
@@ -48,9 +45,8 @@ func (app *SimApp) RegisterIBCModules() error {
 		app.StakingKeeper,
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		"noble1h8tqx833l3t2s45mwxjz29r85dcevy93wk63za",
 	)
-	app.ScopedIBCKeeper = scopedIBCKeeper
 
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(transfertypes.ModuleName)
 	app.TransferKeeper = transferkeeper.NewKeeper(
@@ -63,24 +59,22 @@ func (app *SimApp) RegisterIBCModules() error {
 		app.AccountKeeper,
 		app.BankKeeper,
 		scopedTransferKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		"noble1h8tqx833l3t2s45mwxjz29r85dcevy93wk63za",
 	)
-	app.ScopedTransferKeeper = scopedTransferKeeper
 
-	ibcRouter := porttypes.NewRouter().AddRoute(transfertypes.ModuleName, forwarding.NewMiddleware(transfer.NewIBCModule(app.TransferKeeper), app.AccountKeeper, app.ForwardingKeeper))
+	var transferStack porttypes.IBCModule
+	transferStack = transfer.NewIBCModule(app.TransferKeeper)
+	transferStack = forwarding.NewMiddleware(transferStack, app.AccountKeeper, app.ForwardingKeeper)
+
+	ibcRouter := porttypes.NewRouter().AddRoute(transfertypes.ModuleName, transferStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	app.ForwardingKeeper.SetIBCKeepers(app.IBCKeeper.ChannelKeeper, app.TransferKeeper)
 
-	if err := app.RegisterModules(
-		capability.NewAppModule(app.appCodec, *app.CapabilityKeeper, false),
+	return app.RegisterModules(
+		capability.NewAppModule(app.appCodec, *app.CapabilityKeeper, true),
 		ibc.NewAppModule(app.IBCKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
-		tmclient.NewAppModule(),
-		soloclient.NewAppModule(),
-	); err != nil {
-		return err
-	}
-
-	return nil
+		tendermint.NewAppModule(),
+	)
 }

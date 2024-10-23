@@ -165,6 +165,7 @@ func (AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					}},
 				},
 			},
+			EnhanceCustomCommand: true,
 		},
 		Query: &autocliv1.ServiceCommandDescriptor{
 			Service: forwardingv1.Query_ServiceDesc.ServiceName,
@@ -198,6 +199,10 @@ func (AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			EnhanceCustomCommand: true,
 		},
 	}
+}
+
+func (AppModule) GetTxCmd() *cobra.Command {
+	return cli.GetTxCmd()
 }
 
 func (AppModule) GetQueryCmd() *cobra.Command {
