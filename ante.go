@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
+	"github.com/noble-assets/forwarding/v2/types"
 )
 
 // SigVerificationGasConsumer is a wrapper around the default provided by the

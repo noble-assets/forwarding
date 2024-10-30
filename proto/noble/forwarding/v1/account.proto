@@ -6,7 +6,7 @@ import "cosmos/auth/v1beta1/auth.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/noble-assets/forwarding/v2/x/forwarding/types";
+option go_package = "github.com/noble-assets/forwarding/v2/types";
 
 message ForwardingAccount {
   option (cosmos_proto.implements_interface) = "cosmos.auth.v1beta1.AccountI";

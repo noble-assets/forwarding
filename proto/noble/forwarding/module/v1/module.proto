@@ -6,7 +6,7 @@ import "cosmos/app/v1alpha1/module.proto";
 
 // Module is the config object of the Forwarding module.
 message Module {
-  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/noble-assets/forwarding/v2/x/forwarding"};
+  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/noble-assets/forwarding/v2"};
 
   // authority defines the custom module authority.
   string authority = 1;

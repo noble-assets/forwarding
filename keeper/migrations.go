@@ -3,7 +3,7 @@ package keeper
 import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	v1 "github.com/noble-assets/forwarding/v2/x/forwarding/migrations/v1"
+	v1 "github.com/noble-assets/forwarding/v2/migrations/v1"
 )
 
 // Migrator is a struct for handling in-place store migrations.
