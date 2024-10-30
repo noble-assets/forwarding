@@ -11,7 +11,7 @@ build:
 	@echo "✅ Completed build!"
 
 ###############################################################################
-###                          Formatting & Linting                           ###
+###                                 Tooling                                 ###
 ###############################################################################
 
 gofumpt_cmd=mvdan.cc/gofumpt
@@ -60,7 +60,7 @@ proto-lint:
 
 local-image:
 	@echo "🤖 Building image..."
-	@heighliner build --chain noble-forwarding-simd --file ./chains.yaml --local 1> /dev/null
+	@heighliner build --chain noble-forwarding-simd --file e2e/chains.yaml --local 1> /dev/null
 	@echo "✅ Completed build!"
 
 test: test-e2e

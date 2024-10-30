@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorstypes "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
+	"github.com/noble-assets/forwarding/v2/types"
 )
 
 var _ types.QueryServer = &Keeper{}

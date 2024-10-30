@@ -21,15 +21,15 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	modulev1 "github.com/noble-assets/forwarding/v2/api/noble/forwarding/module/v1"
-	forwardingv1 "github.com/noble-assets/forwarding/v2/api/noble/forwarding/v1"
-	"github.com/noble-assets/forwarding/v2/x/forwarding/client/cli"
-	"github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
-	"github.com/noble-assets/forwarding/v2/x/forwarding/types"
+	modulev1 "github.com/noble-assets/forwarding/v2/api/module/v1"
+	forwardingv1 "github.com/noble-assets/forwarding/v2/api/v1"
+	"github.com/noble-assets/forwarding/v2/client/cli"
+	"github.com/noble-assets/forwarding/v2/keeper"
+	"github.com/noble-assets/forwarding/v2/types"
 	"github.com/spf13/cobra"
 )
 
-// ConsensusVersion defines the current x/forwarding module consensus version.
+// ConsensusVersion defines the current Forwarding module consensus version.
 const ConsensusVersion = 2
 
 var (
@@ -122,7 +122,7 @@ func (m AppModule) RegisterServices(cfg module.Configurator) {
 
 	migrator := keeper.NewMigrator(m.keeper)
 	if err := cfg.RegisterMigration(types.ModuleName, 1, migrator.Migrate1to2); err != nil {
-		panic(fmt.Sprintf("failed to migrate x/forwarding from version 1 to 2: %v", err))
+		panic(fmt.Sprintf("failed to migrate Forwarding from version 1 to 2: %v", err))
 	}
 }
 
@@ -242,7 +242,7 @@ type ModuleOutputs struct {
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
 	if in.Config.Authority == "" {
-		panic("authority for x/forwarding module must be set")
+		panic("authority for Forwarding module must be set")
 	}
 
 	authority := authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)

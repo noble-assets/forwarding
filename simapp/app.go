@@ -27,7 +27,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"
 	_ "github.com/cosmos/cosmos-sdk/x/params"
 	_ "github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/noble-assets/forwarding/v2/x/forwarding"
+	"github.com/noble-assets/forwarding/v2"
 
 	// Cosmos Modules
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
@@ -44,7 +44,7 @@ import (
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	// Custom Modules
-	forwardingkeeper "github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
+	forwardingkeeper "github.com/noble-assets/forwarding/v2/keeper"
 )
 
 var DefaultNodeHome string

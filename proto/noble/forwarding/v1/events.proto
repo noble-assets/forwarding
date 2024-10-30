@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package noble.forwarding.v1;
 
-option go_package = "github.com/noble-assets/forwarding/v2/x/forwarding/types";
+option go_package = "github.com/noble-assets/forwarding/v2/types";
 
 // AccountRegistered is emitted whenever a new forwarding account is registered.
 message AccountRegistered {
