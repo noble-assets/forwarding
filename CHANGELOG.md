@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## Unreleased
+
+### DEPENDENCIES
+
+- Upgrade Cosmos SDK from `v0.45.x` to `v0.50.x` ([#1](https://github.com/noble-assets/forwarding/pull/1))
+
+### FEATURES
+
+- Support an optional fallback address for easy recovery of funds. ([#12](https://github.com/noble-assets/forwarding/pull/12))
+- Allow fine-tuned control over which denoms are forwarded. ([#13](https://github.com/noble-assets/forwarding/pull/13))
+- Allow accounts with a balance to be registered signerlessly. ([#18](https://github.com/noble-assets/forwarding/pull/18))
+
+### IMPROVEMENTS
+
+- Bump module path to `v2` to align with Golang conventions. ([#3](https://github.com/noble-assets/forwarding/pull/3))
+- Emit events for key module actions (registering, clearing, etc). ([#13](https://github.com/noble-assets/forwarding/pull/13))
+
 ## v1.1.0
 
 *Apr 29, 2024*
