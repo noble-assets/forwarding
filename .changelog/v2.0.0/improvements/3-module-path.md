@@ -1,0 +1,1 @@
+- Update module path for v2 release line. ([#3](https://github.com/noble-assets/forwarding/pull/3))

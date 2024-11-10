@@ -1,21 +1,28 @@
 # CHANGELOG
 
-## Unreleased
+## v2.0.0
+
+*Nov 10, 2024*
+
+Second release of the `x/forwarding` module, aligning it with the latest developments in Cosmos and Noble.
 
 ### DEPENDENCIES
 
-- Upgrade Cosmos SDK from `v0.45.x` to `v0.50.x` ([#1](https://github.com/noble-assets/forwarding/pull/1))
+- Upgrade Cosmos SDK to the latest v0.50.x release. ([#1](https://github.com/noble-assets/forwarding/pull/1))
 
 ### FEATURES
 
+- Support [app wiring](https://docs.cosmos.network/v0.50/build/building-apps/app-go-v2) for compatibility with Noble's core codebase. ([#1](https://github.com/noble-assets/forwarding/pull/1))
+- Utilize [collections](https://docs.cosmos.network/v0.50/build/packages/collections) for managing module state. ([#1](https://github.com/noble-assets/forwarding/pull/1))
 - Support an optional fallback address for easy recovery of funds. ([#12](https://github.com/noble-assets/forwarding/pull/12))
 - Allow fine-tuned control over which denoms are forwarded. ([#13](https://github.com/noble-assets/forwarding/pull/13))
 - Allow accounts with a balance to be registered signerlessly. ([#18](https://github.com/noble-assets/forwarding/pull/18))
 
 ### IMPROVEMENTS
 
-- Bump module path to `v2` to align with Golang conventions. ([#3](https://github.com/noble-assets/forwarding/pull/3))
+- Update module path for v2 release line. ([#3](https://github.com/noble-assets/forwarding/pull/3))
 - Emit events for key module actions (registering, clearing, etc). ([#13](https://github.com/noble-assets/forwarding/pull/13))
+- Reorganize repository to align with Noble's standards. ([#19](https://github.com/noble-assets/forwarding/pull/19))
 
 ## v1.1.0
 
