@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,6 +26,10 @@ func (k *Keeper) Denoms(ctx context.Context, req *types.QueryDenoms) (*types.Que
 func (k *Keeper) Address(ctx context.Context, req *types.QueryAddress) (*types.QueryAddressResponse, error) {
 	if req == nil {
 		return nil, errorstypes.ErrInvalidRequest
+	}
+
+	if len(req.Recipient) > transfertypes.MaximumReceiverLength {
+		return nil, fmt.Errorf("recipient address must not exceed %d bytes", transfertypes.MaximumReceiverLength)
 	}
 
 	if req.Fallback != "" {
