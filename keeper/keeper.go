@@ -160,7 +160,7 @@ func (k *Keeper) ExecuteForwards(ctx context.Context) {
 				Memo:             "",
 			}
 			if err := msg.ValidateBasic(); err != nil {
-				k.Logger().Error("message validation failed", "channel", forward.Channel, "address", forward.GetAddress().String(), "amount", balance.String(), "err", err)
+				k.Logger().Error("ibc message validation failed", "channel", forward.Channel, "address", forward.GetAddress().String(), "amount", balance.String(), "err", err)
 				continue
 			}
 			_, err := k.transferKeeper.Transfer(ctx, msg)
