@@ -173,9 +173,6 @@ func (k *Keeper) SetAllowedDenoms(ctx context.Context, msg *types.MsgSetAllowedD
 //   - A non nil PubKey with the custom type, i.e. the account has been registered sending a
 //     signerless tx.
 //   - Can have any sequence value.
-//
-// In the second case the Seuqnece can be any number because the signlerless registration
-// can fail after registering the PubKey and increasing the sequence.
 func ValidateAccountFields(account sdk.AccountI, address sdk.AccAddress) error {
 	pubKey := account.GetPubKey()
 
