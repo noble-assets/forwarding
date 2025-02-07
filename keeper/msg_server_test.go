@@ -35,7 +35,6 @@ func TestValidateAccountFields(t *testing.T) {
 	key := secp256k1.GenPrivKey()
 	addr := sdk.AccAddress(key.PubKey().Address())
 
-	// Test cases
 	tests := []struct {
 		name        string
 		malleate    func(acc sdk.AccountI)
@@ -83,7 +82,6 @@ func TestValidateAccountFields(t *testing.T) {
 		},
 	}
 
-	// Execute each test case.
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			baseAcc := &authtypes.BaseAccount{Address: addr.String()}
