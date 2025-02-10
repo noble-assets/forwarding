@@ -62,7 +62,6 @@ func TestValidateAccountFields(t *testing.T) {
 				if err := acc.SetPubKey(&types.ForwardingPubKey{Key: addr}); err != nil {
 					return err
 				}
-
 				return acc.SetSequence(1)
 			},
 		},
@@ -70,9 +69,10 @@ func TestValidateAccountFields(t *testing.T) {
 			name:    "Account created signerlessly but wrong address",
 			address: sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()),
 			malleate: func(acc sdk.AccountI) error {
-				key := secp256k1.GenPrivKey()
-				newAddr := sdk.AccAddress(key.PubKey().Address())
-				return acc.SetPubKey(&types.ForwardingPubKey{Key: newAddr})
+				if err := acc.SetPubKey(&types.ForwardingPubKey{Key: addr}); err != nil {
+					return err
+				}
+				return acc.SetSequence(1)
 			},
 			errContains: "attempting to register an existing user",
 		},
