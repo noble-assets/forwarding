@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v2.0.1
+
+*Feb 10, 2025*
+
+This is a consensus breaking patch release to the v2 line.
+
+### IMPROVEMENTS
+
+- Ensure recipient addresses do not exceed IBC limit. ([#22](https://github.com/noble-assets/forwarding/pull/22))
+- Harden check around existing accounts when registering. ([#23](https://github.com/noble-assets/forwarding/pull/23))
+
 ## v2.0.0
 
 *Nov 10, 2024*

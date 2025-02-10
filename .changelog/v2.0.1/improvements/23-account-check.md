@@ -1,0 +1,1 @@
+- Harden check around existing accounts when registering. ([#23](https://github.com/noble-assets/forwarding/pull/23))
