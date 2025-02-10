@@ -177,7 +177,7 @@ func ValidateAccountFields(account sdk.AccountI, address sdk.AccAddress) error {
 	pubKey := account.GetPubKey()
 
 	isNewAccount := pubKey == nil && account.GetSequence() == 0
-	isValidPubKey := pubKey != nil && account.GetPubKey().Equals(&types.ForwardingPubKey{Key: address})
+	isValidPubKey := pubKey != nil && pubKey.Equals(&types.ForwardingPubKey{Key: address})
 
 	if !isNewAccount && !isValidPubKey {
 		return fmt.Errorf("attempting to register an existing user account with address: %s", address.String())
