@@ -1,7 +1,7 @@
+// Use of this software is governed by the Business Source License included
 // SPDX-License-Identifier: BUSL-1.1
 //
 // Copyright (C) 2025, NASD Inc. All rights reserved.
-// Use of this software is governed by the Business Source License included
 // in the LICENSE file of this repository and at www.mariadb.com/bsl11.
 //
 // ANY USE OF THE LICENSED WORK IN VIOLATION OF THIS LICENSE WILL AUTOMATICALLY
@@ -38,40 +38,50 @@ func TestValidateAccountFields(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		malleate    func(acc sdk.AccountI)
+		malleate    func(acc sdk.AccountI) error
+		address     []byte
 		errContains string
 	}{
 		{
 			name:     "New account",
-			malleate: func(acc sdk.AccountI) {},
+			address:  addr,
+			malleate: func(acc sdk.AccountI) error { return nil },
 		},
 		{
-			name:        "Account with nil pub key but non zero sequence",
-			malleate:    func(acc sdk.AccountI) { acc.SetSequence(1) },
+			name:    "Account with nil pub key but non zero sequence",
+			address: addr,
+			malleate: func(acc sdk.AccountI) error {
+				return acc.SetSequence(1)
+			},
 			errContains: "attempting to register an existing user",
 		},
 		{
-			name: "Account created signerlessly",
-			malleate: func(acc sdk.AccountI) {
-				acc.SetPubKey(&types.ForwardingPubKey{Key: addr})
-				acc.SetSequence(1)
+			name:    "Account created signerlessly",
+			address: addr,
+			malleate: func(acc sdk.AccountI) error {
+				if err := acc.SetPubKey(&types.ForwardingPubKey{Key: addr}); err != nil {
+					return err
+				}
+
+				return acc.SetSequence(1)
 			},
 		},
 		{
-			name: "Account created signerlessly but wrong address",
-			malleate: func(acc sdk.AccountI) {
+			name:    "Account created signerlessly but wrong address",
+			address: sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()),
+			malleate: func(acc sdk.AccountI) error {
 				key := secp256k1.GenPrivKey()
 				newAddr := sdk.AccAddress(key.PubKey().Address())
-				acc.SetPubKey(&types.ForwardingPubKey{Key: newAddr})
-				acc.SetAddress(newAddr)
+				return acc.SetPubKey(&types.ForwardingPubKey{Key: newAddr})
 			},
 			errContains: "attempting to register an existing user",
 		},
 		{
-			name: "Account created with different pub key type",
-			malleate: func(acc sdk.AccountI) {
+			name:    "Account created with different pub key type",
+			address: addr,
+			malleate: func(acc sdk.AccountI) error {
 				key := secp256k1.GenPrivKey()
-				acc.SetPubKey(key.PubKey())
+				return acc.SetPubKey(key.PubKey())
 			},
 			errContains: "attempting to register an existing user",
 		},
@@ -80,9 +90,10 @@ func TestValidateAccountFields(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			baseAcc := &authtypes.BaseAccount{Address: addr.String()}
-			test.malleate(baseAcc)
+			err := test.malleate(baseAcc)
+			require.NoError(t, err, "expected no error configuring the account")
 
-			err := keeper.ValidateAccountFields(baseAcc, sdk.AccAddress(addr))
+			err = keeper.ValidateAccountFields(baseAcc, sdk.AccAddress(test.address))
 			if test.errContains != "" {
 				require.Error(t, err)
 				require.ErrorContains(t, err, test.errContains)
