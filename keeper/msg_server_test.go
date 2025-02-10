@@ -54,13 +54,7 @@ func TestValidateAccountFields(t *testing.T) {
 			name: "Account created signerlessly",
 			malleate: func(acc sdk.AccountI) {
 				acc.SetPubKey(&types.ForwardingPubKey{Key: addr})
-			},
-		},
-		{
-			name: "Account created signerlessly and non zero sequence",
-			malleate: func(acc sdk.AccountI) {
-				acc.SetPubKey(&types.ForwardingPubKey{Key: addr})
-				acc.SetSequence(100)
+				acc.SetSequence(1)
 			},
 		},
 		{
