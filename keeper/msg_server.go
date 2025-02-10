@@ -163,7 +163,7 @@ func (k *Keeper) SetAllowedDenoms(ctx context.Context, msg *types.MsgSetAllowedD
 
 // ValidateAccountFields is a utility for checking if an account is eligible to be registered.
 //
-// A valid forwarding account must satisfy one of these conditions:
+// A valid account must satisfy one of the following conditions.
 //
 // 1. Is a new account:
 //   - A nil PubKey, i.e. the account never sent a transaction AND
