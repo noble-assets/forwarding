@@ -37,10 +37,9 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 
 	if k.accountKeeper.HasAccount(ctx, address) {
 		rawAccount := k.accountKeeper.GetAccount(ctx, address)
-		if rawAccount.GetPubKey() != nil || rawAccount.GetSequence() != 0 {
-			if !rawAccount.GetPubKey().Equals(&types.ForwardingPubKey{Key: address}) {
-				return nil, fmt.Errorf("attempting to register an existing user account with address: %s", address.String())
-			}
+
+		if err := ValidateAccountFields(rawAccount, address); err != nil {
+			return nil, err
 		}
 
 		switch account := rawAccount.(type) {
@@ -160,4 +159,28 @@ func (k *Keeper) SetAllowedDenoms(ctx context.Context, msg *types.MsgSetAllowedD
 		PreviousDenoms: previousDenoms,
 		CurrentDenoms:  msg.Denoms,
 	})
+}
+
+// ValidateAccountFields is a utility for checking if an account is eligible to be registered.
+//
+// A valid account must satisfy one of the following conditions.
+//
+// 1. Is a new account:
+//   - A nil PubKey, i.e. the account never sent a transaction AND
+//   - A 0 sequence.
+//
+// 2. Is an account registered signerlessy:
+//   - A non nil PubKey with the custom type, i.e. the account has been registered sending a
+//     signerless tx.
+//   - Can have any sequence value.
+func ValidateAccountFields(account sdk.AccountI, address sdk.AccAddress) error {
+	pubKey := account.GetPubKey()
+
+	isNewAccount := pubKey == nil && account.GetSequence() == 0
+	isValidPubKey := pubKey != nil && pubKey.Equals(&types.ForwardingPubKey{Key: address})
+
+	if !isNewAccount && !isValidPubKey {
+		return fmt.Errorf("attempting to register an existing user account with address: %s", address.String())
+	}
+	return nil
 }

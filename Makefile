@@ -63,7 +63,12 @@ local-image:
 	@heighliner build --chain noble-forwarding-simd --file e2e/chains.yaml --local 1> /dev/null
 	@echo "✅ Completed build!"
 
-test: test-e2e
+test: test-unit test-e2e
+
+test-unit:
+	@echo "🤖 Running unit tests..."
+	@go test -race -v ./keeper/...
+	@echo "✅ Completed unit tests!"
 
 test-e2e:
 	@echo "🤖 Running e2e tests..."
