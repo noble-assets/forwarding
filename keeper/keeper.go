@@ -149,7 +149,7 @@ func (k *Keeper) ExecuteForwards(ctx context.Context) {
 			}
 
 			timeout := uint64(k.headerService.GetHeaderInfo(ctx).Time.UnixNano()) + transfertypes.DefaultRelativePacketTimeoutTimestamp
-			_, err := k.transferKeeper.Transfer(ctx, &transfertypes.MsgTransfer{
+			msg := &transfertypes.MsgTransfer{
 				SourcePort:       transfertypes.PortID,
 				SourceChannel:    forward.Channel,
 				Token:            balance,
@@ -158,7 +158,12 @@ func (k *Keeper) ExecuteForwards(ctx context.Context) {
 				TimeoutHeight:    clienttypes.ZeroHeight(),
 				TimeoutTimestamp: timeout,
 				Memo:             "",
-			})
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				k.Logger().Error("ibc message validation failed", "channel", forward.Channel, "address", forward.GetAddress().String(), "amount", balance.String(), "err", err)
+				continue
+			}
+			_, err := k.transferKeeper.Transfer(ctx, msg)
 			if err != nil {
 				// TODO: Consider moving to persistent store in order to retry in future blocks?
 				k.Logger().Error("unable to execute automatic forward", "channel", forward.Channel, "address", forward.GetAddress().String(), "amount", balance.String(), "err", err)

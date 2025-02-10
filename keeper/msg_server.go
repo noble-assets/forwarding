@@ -40,6 +40,10 @@ func (k *Keeper) RegisterAccount(ctx context.Context, msg *types.MsgRegisterAcco
 		return nil, errors.New("invalid channel")
 	}
 
+	if len(msg.Recipient) > transfertypes.MaximumReceiverLength {
+		return nil, fmt.Errorf("recipient address must not exceed %d bytes", transfertypes.MaximumReceiverLength)
+	}
+
 	if msg.Fallback != "" {
 		if _, err := k.accountKeeper.AddressCodec().StringToBytes(msg.Fallback); err != nil {
 			return nil, errors.New("invalid fallback address")

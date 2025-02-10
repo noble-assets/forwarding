@@ -1,0 +1,1 @@
+- Ensure recipient addresses do not exceed IBC limit. ([#22](https://github.com/noble-assets/forwarding/pull/22))
