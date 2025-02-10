@@ -26,9 +26,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/noble-assets/forwarding/v2/keeper"
 	"github.com/stretchr/testify/require"
 
+	"github.com/noble-assets/forwarding/v2/keeper"
 	"github.com/noble-assets/forwarding/v2/types"
 )
 
@@ -83,15 +83,15 @@ func TestValidateAccountFields(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			baseAcc := &authtypes.BaseAccount{Address: addr.String()}
-			tt.malleate(baseAcc)
+			test.malleate(baseAcc)
 
 			err := keeper.ValidateAccountFields(baseAcc, sdk.AccAddress(addr))
-			if tt.errContains != "" {
+			if test.errContains != "" {
 				require.Error(t, err)
-				require.ErrorContains(t, err, tt.errContains)
+				require.ErrorContains(t, err, test.errContains)
 			} else {
 				require.NoError(t, err)
 			}
