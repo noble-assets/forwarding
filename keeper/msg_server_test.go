@@ -34,7 +34,7 @@ import (
 
 func TestValidateAccountFields(t *testing.T) {
 	key := secp256k1.GenPrivKey()
-	addr := key.PubKey().Address()
+	addr := sdk.AccAddress(key.PubKey().Address())
 
 	tests := []struct {
 		name        string
@@ -93,7 +93,7 @@ func TestValidateAccountFields(t *testing.T) {
 			err := test.malleate(baseAcc)
 			require.NoError(t, err, "expected no error configuring the account")
 
-			err = keeper.ValidateAccountFields(baseAcc, sdk.AccAddress(test.address))
+			err = keeper.ValidateAccountFields(baseAcc, test.address)
 			if test.errContains != "" {
 				require.Error(t, err)
 				require.ErrorContains(t, err, test.errContains)
