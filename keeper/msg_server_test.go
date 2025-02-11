@@ -34,7 +34,7 @@ import (
 
 func TestValidateAccountFields(t *testing.T) {
 	key := secp256k1.GenPrivKey()
-	addr := sdk.AccAddress(key.PubKey().Address())
+	addr := key.PubKey().Address()
 
 	tests := []struct {
 		name        string
