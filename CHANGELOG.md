@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v2.0.2
+
+*Apr 9, 2025*
+
+This is a non-consensus breaking patch release to the v2 line.
+
+### IMPROVEMENTS
+
+- Enable customization of underlying ante handler in `SigVerificationDecorator` ([#27](https://github.com/noble-assets/forwarding/pull/27))
+
 ## v2.0.1
 
 *Feb 10, 2025*

@@ -22,11 +22,11 @@ package forwarding
 
 import (
 	storetypes "cosmossdk.io/store/types"
-	txsigning "cosmossdk.io/x/tx/signing"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	"github.com/noble-assets/forwarding/v2/types"
 )
 
@@ -45,17 +45,23 @@ func SigVerificationGasConsumer(
 
 //
 
+var _ sdk.AnteDecorator = SigVerificationDecorator{}
+
 type SigVerificationDecorator struct {
-	underlying ante.SigVerificationDecorator
 	bank       types.BankKeeper
+	underlying sdk.AnteDecorator
 }
 
 var _ sdk.AnteDecorator = SigVerificationDecorator{}
 
-func NewSigVerificationDecorator(ak ante.AccountKeeper, bk types.BankKeeper, signModeHandler *txsigning.HandlerMap) SigVerificationDecorator {
+func NewSigVerificationDecorator(bk types.BankKeeper, underlying sdk.AnteDecorator) SigVerificationDecorator {
+	if underlying == nil {
+		panic("underlying ante decorator cannot be nil")
+	}
+
 	return SigVerificationDecorator{
-		underlying: ante.NewSigVerificationDecorator(ak, signModeHandler),
 		bank:       bk,
+		underlying: underlying,
 	}
 }
 

@@ -33,6 +33,11 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		return nil, errors.Wrap(errorstypes.ErrLogic, "sign mode handler is required for ante builder")
 	}
 
+	sigVerificationDecorator := forwarding.NewSigVerificationDecorator(
+		options.BankKeeper,
+		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+	)
+
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
@@ -44,7 +49,10 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSetPubKeyDecorator(options.AccountKeeper), // SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
-		forwarding.NewSigVerificationDecorator(options.AccountKeeper, options.BankKeeper, options.SignModeHandler),
+
+		// Custom signature verification for Forwarding accounts.
+		sigVerificationDecorator,
+
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 	}
 

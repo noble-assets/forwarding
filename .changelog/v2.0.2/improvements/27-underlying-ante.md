@@ -1,0 +1,1 @@
+- Enable customization of underlying ante handler in `SigVerificationDecorator` ([#27](https://github.com/noble-assets/forwarding/pull/27))
