@@ -1,1 +1,1 @@
-- Use an interface for underlying ante in `NewSigVerificationDecorator`. ([#27](https://github.com/noble-assets/forwarding/pull/27))
+- Enable customization of underlying ante handler in `NewSigVerificationDecorator`. ([#27](https://github.com/noble-assets/forwarding/pull/27))
