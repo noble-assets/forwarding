@@ -1,0 +1,1 @@
+- Use an interface for underlying ante in `NewSigVerificationDecorator`. ([#27](https://github.com/noble-assets/forwarding/pull/27))
