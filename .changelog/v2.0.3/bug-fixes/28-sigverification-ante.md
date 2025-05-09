@@ -1,0 +1,1 @@
+- Return an error from the custom `SigVerificationDecorator` when forwarding account does not have balance to prevent a panic. ([#28](https://github.com/noble-assets/forwarding/pull/28))
