@@ -73,10 +73,14 @@ func (d SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 		}
 
 		address := types.GenerateAddress(msg.Channel, msg.Recipient, msg.Fallback)
-		balance := d.bank.GetAllBalances(ctx, address)
 
-		if balance.IsZero() || msg.Signer != address.String() {
+		if msg.Signer != address.String() {
 			return d.underlying.AnteHandle(ctx, tx, simulate, next)
+		}
+
+		balance := d.bank.GetAllBalances(ctx, address)
+		if balance.IsZero() {
+			return ctx, types.ErrInvalidAccountBalance.Wrap("account must have balance")
 		}
 
 		return next(ctx, tx, simulate)
